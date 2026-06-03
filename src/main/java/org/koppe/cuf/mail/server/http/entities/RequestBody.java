@@ -1,7 +1,5 @@
 package org.koppe.cuf.mail.server.http.entities;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
@@ -15,7 +13,6 @@ public interface RequestBody<T> extends Body {
      * Parses the values in the inputstream to it's object representation
      * 
      * @return object representation of the input stream
-     * @throws IOException When the stream is already empty or closed
      */
     public T getObject();
 

@@ -68,7 +68,8 @@ public class HttpSession<I, O> implements Session {
     /**
      * List of server headers
      */
-    private Map<String, String> serverHeaders = Map.of("Server", "Host", "Cache-Control", "no-store");
+    private Map<String, String> serverHeaders = Map.of("Server", "Host", "Cache-Control", "no-store", "Connection",
+            "close");
     /**
      * List of all subscribed servers
      */
@@ -118,65 +119,80 @@ public class HttpSession<I, O> implements Session {
     private void buildRequest(Request<I> request) throws IOException {
         logger.debug("Building request");
         Map<String, String> headers = new HashMap<>();
-        StringBuilder bodyBuilder = new StringBuilder().append("");
 
-        String line = null;
-        boolean bodyStarted = false;
-
+        String line;
         logger.debug("Starting to read client input");
-        try {
-            while ((line = reader.readLine()) != null) {
-                logger.trace("Read new line");
-                if (line.isBlank()) {
-                    if (bodyStarted)
-                        break;
-                    logger.debug("Found empty line, body starts");
-                    bodyStarted = true;
-                    continue;
-                }
-
-                if (bodyStarted) {
-                    bodyBuilder.append(line).append("\r\n");
-                    logger.trace("Body line appended");
-                } else {
-                    String[] lineParts = line.split(": ", 2);
-                    headers.put(lineParts[0], lineParts[1]);
-                    logger.trace("Header appended");
-                }
+        while ((line = reader.readLine()) != null) {
+            logger.trace("Read new line: {}", line);
+            if (line.isBlank()) {
+                logger.debug("End of headers");
+                break;
             }
-        } catch (IOException e) {
-            logger.error("Could not read the input stream", e);
-            errorHandling();
-            return;
+
+            String[] lineParts = line.split(": ", 2);
+            if (lineParts.length == 2) {
+                headers.put(lineParts[0], lineParts[1]);
+                logger.trace("Header appended");
+            } else {
+                logger.warn("Invalid header line: {}", line);
+            }
         }
-        logger.info("Entire message read from input stream");
+
+        if (line == null) {
+            throw new IOException("Client closed connection before end of headers");
+        }
 
         request.setHeaders(headers);
         addQuery(request);
         logger.debug("Added query to request");
 
-        if (bodyBuilder.toString().isBlank()) {
-            logger.debug("No body sent, using empty body");
-            request.setBody(RequestBody.empty(endpoint.getInputType()));
-            return;
+        int contentLength = 0;
+        if (headers.containsKey("Content-Length")) {
+            try {
+                contentLength = Integer.parseInt(headers.get("Content-Length").trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid Content-Length: {}", headers.get("Content-Length"));
+                request.setBody(RequestBody.empty(endpoint.getInputType()));
+                return;
+            }
+        }
+
+        String body = "";
+        if (contentLength > 0) {
+            body = readBody(contentLength);
         }
 
         if (endpoint.getInputType().equals(new TypeReference<Void>() {
         })) {
-            logger.debug("Parsing body to {}", endpoint.getInputType());
-            I body = parseBody(bodyBuilder.toString());
-            if (body == null) {
+            logger.debug("Expected type is Void, ignoring body");
+            request.setBody(RequestBody.empty(endpoint.getInputType()));
+        } else if (body.isBlank()) {
+            logger.debug("No body sent, using empty body");
+            request.setBody(RequestBody.empty(endpoint.getInputType()));
+        } else {
+            I parsed = parseBody(body);
+            if (parsed == null) {
                 logger.warn("Could not parse body to object");
-                request = null;
+                request.setBody(RequestBody.empty(endpoint.getInputType()));
                 return;
             }
-            logger.debug("Adding parsed body");
-            request.setBody(RequestBody.of(body, bodyBuilder.toString(), endpoint.getInputType()));
-        } else {
-            logger.debug("Expected type for body is Void, adding empty body");
-            request.setBody(RequestBody.of("", endpoint.getInputType()));
+            request.setBody(RequestBody.of(parsed, body, endpoint.getInputType()));
         }
+
         logger.info("Built request");
+    }
+
+    private String readBody(int length) throws IOException {
+        char[] buffer = new char[length];
+        int read = 0;
+        while (read < length) {
+            int n = reader.read(buffer, read, length - read);
+            if (n < 0) {
+                break;
+            }
+            read += n;
+        }
+        return new String(buffer, 0, read);
     }
 
     // #region parse body
@@ -312,6 +328,8 @@ public class HttpSession<I, O> implements Session {
         try {
             if (!socket.isClosed())
                 socket.close();
+            reader.close();
+            writer.close();
         } catch (IOException e) {
             logger.error("Could not close socket", e);
         }

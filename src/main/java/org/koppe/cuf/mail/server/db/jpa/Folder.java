@@ -2,7 +2,6 @@ package org.koppe.cuf.mail.server.db.jpa;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.ManyToAny;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +20,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "folders", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "name", "parent", "owner" }, name = "parent_folder_owner")
+        @UniqueConstraint(columnNames = { "folder_name", "parent_id", "owner_id" }, name = "parent_folder_owner")
 })
 @RequiredArgsConstructor
 @Getter
@@ -31,18 +30,18 @@ import lombok.ToString;
 public class Folder implements BoxElement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "folder_id", unique = true, nullable = false)
     private Long id;
 
-    @ManyToAny
+    @ManyToOne(optional = true)
     @JoinColumn(name = "parent_id", unique = false, nullable = true)
     @Fetch(FetchMode.JOIN)
     private Folder parent;
 
-    @Column(name = "name", unique = false, nullable = false)
+    @Column(name = "folder_name", unique = false, nullable = false)
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", unique = false, nullable = false)
+    @JoinColumn(name = "owner_id", unique = false, nullable = false)
     private User owner;
 }

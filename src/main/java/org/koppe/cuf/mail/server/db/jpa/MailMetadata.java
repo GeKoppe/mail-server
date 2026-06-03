@@ -24,16 +24,16 @@ import lombok.ToString;
 public class MailMetadata {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, unique = true)
+    @Column(name = "metadata_id", nullable = false, unique = true)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "mail_id", nullable = false)
     private Mail mail;
 
-    @Column(name = "key", unique = false, nullable = false)
+    @Column(name = "meta_key", unique = false, nullable = false)
     private String key;
 
-    @Column(name = "value", unique = false, nullable = false)
+    @Column(name = "meta_value", unique = false, nullable = false)
     private String value;
 }

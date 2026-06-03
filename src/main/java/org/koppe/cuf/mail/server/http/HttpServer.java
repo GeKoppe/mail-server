@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Main component for http communication handling
+ */
 @RequiredArgsConstructor
 public class HttpServer implements Server {
     /**

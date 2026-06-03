@@ -28,24 +28,24 @@ import lombok.ToString.Include;
 public class Mail implements BoxElement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, unique = true)
+    @Column(name = "mail_id", nullable = false, unique = true)
     @Include
     private Long id;
 
-    @Column(name = "from", unique = false, nullable = false)
+    @Column(name = "mail_from", unique = false, nullable = false)
     @Include
     private String from;
 
-    @Column(name = "subject", unique = false, nullable = true)
+    @Column(name = "mail_subject", unique = false, nullable = true)
     private String subject;
 
-    @Column(name = "received", unique = false, nullable = false)
+    @Column(name = "received_time", unique = false, nullable = false)
     private LocalDateTime received;
 
-    @Column(name = "read", unique = false, nullable = false)
+    @Column(name = "is_read", unique = false, nullable = false)
     private Boolean read;
 
-    @Column(name = "deleted", unique = false, nullable = false)
+    @Column(name = "is_deleted", unique = false, nullable = false)
     private Boolean deleted;
 
     @OneToMany(mappedBy = "mail")

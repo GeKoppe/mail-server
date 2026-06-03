@@ -8,12 +8,14 @@ import org.koppe.cuf.mail.server.db.repository.JpaRepository;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import lombok.Setter;
 
 public class UserService {
     /**
      * Repository for interacting with the database
      */
-    private final JpaRepository<User, Integer> repo = new JpaRepository<>(User.class);
+    @Setter
+    private JpaRepository<User, Integer> repo = new JpaRepository<>(User.class);
 
     // #region find by id
     /**
@@ -58,5 +60,13 @@ public class UserService {
      */
     public void deleteById(int id) {
         repo.deleteById(id);
+    }
+
+    public User save(User u) {
+        try {
+            return repo.save(u);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

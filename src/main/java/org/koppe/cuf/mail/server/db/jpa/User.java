@@ -29,14 +29,14 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class User {
     @Id
-    @Column(name = "id", nullable = false, unique = true)
+    @Column(name = "user_id", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "mail", nullable = false, unique = true)
+    @Column(name = "user_mail", nullable = false, unique = true)
     private String mail;
 
     @Column(name = "password", nullable = false, unique = false)
