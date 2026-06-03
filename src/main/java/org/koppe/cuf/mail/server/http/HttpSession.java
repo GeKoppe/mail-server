@@ -22,13 +22,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.ToString.Include;
 
 @RequiredArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
 public class HttpSession<I, O> implements Session {
     /**
      * Logger
@@ -38,10 +41,12 @@ public class HttpSession<I, O> implements Session {
      * Signalises system activity
      */
     @Getter
+    @Include
     private volatile boolean active = true;
     /**
      * Session socket
      */
+    @Include
     private final Socket socket;
     /**
      * First line the server needs to determine method and endpoint
@@ -50,6 +55,7 @@ public class HttpSession<I, O> implements Session {
     /**
      * Endpoint called by the client
      */
+    @Include
     private final Endpoint<I, O> endpoint;
     /**
      * Reader for the input stream
@@ -63,6 +69,9 @@ public class HttpSession<I, O> implements Session {
      * List of server headers
      */
     private Map<String, String> serverHeaders = Map.of("Server", "Host", "Cache-Control", "no-store");
+    /**
+     * List of all subscribed servers
+     */
     private List<Server> subscribers = new ArrayList<>();
 
     /**
@@ -74,13 +83,26 @@ public class HttpSession<I, O> implements Session {
         Request<I> request = Request.empty(endpoint.getInputType());
 
         subscribers.forEach(s -> s.notify(new StatusChangeEvent(this, StatusChange.WORKING)));
-        buildRequest(request);
+        try {
+            buildRequest(request);
+        } catch (IOException e) {
+            logger.error("Exception occurred while building the request", e);
+            close();
+            subscribers.forEach(s -> s.notify(new StatusChangeEvent(this, StatusChange.DONE)));
+            return;
+        }
 
         Response<O> response = endpoint.handle(request);
         try {
             handleResponse(response);
         } catch (IOException e) {
             logger.error("Could not respond to client due to exception", e);
+            try {
+                errorHandling();
+            } catch (IOException e1) {
+                logger.error("Exception occurred while handling the previous exception", e1);
+            }
+
         }
         close();
         subscribers.forEach(s -> s.notify(new StatusChangeEvent(this, StatusChange.DONE)));
@@ -91,8 +113,9 @@ public class HttpSession<I, O> implements Session {
      * Builds the request by reading the sockets input stream
      * 
      * @param request Request to populate
+     * @throws IOException
      */
-    private void buildRequest(Request<I> request) {
+    private void buildRequest(Request<I> request) throws IOException {
         logger.debug("Building request");
         Map<String, String> headers = new HashMap<>();
         StringBuilder bodyBuilder = new StringBuilder().append("");
@@ -123,6 +146,7 @@ public class HttpSession<I, O> implements Session {
             }
         } catch (IOException e) {
             logger.error("Could not read the input stream", e);
+            errorHandling();
             return;
         }
         logger.info("Entire message read from input stream");
@@ -137,7 +161,8 @@ public class HttpSession<I, O> implements Session {
             return;
         }
 
-        if (endpoint.getInputType() != Void.class) {
+        if (endpoint.getInputType().equals(new TypeReference<Void>() {
+        })) {
             logger.debug("Parsing body to {}", endpoint.getInputType());
             I body = parseBody(bodyBuilder.toString());
             if (body == null) {
@@ -184,7 +209,7 @@ public class HttpSession<I, O> implements Session {
         logger.debug("Parsing query");
         if (!firstLine.resource().contains("?")) {
             logger.debug("No query in current request");
-            r.setQuery(null);
+            r.setQuery(new HashMap<>());
             return;
         }
 
@@ -226,7 +251,8 @@ public class HttpSession<I, O> implements Session {
         });
 
         if (r.getCode() >= 200 && r.getCode() < 300) {
-            if (endpoint.getOutputType() != Void.class) {
+            if (!endpoint.getOutputType().equals(new TypeReference<Void>() {
+            })) {
                 String bodyString = null;
                 if (r.getBody().getString() == null || r.getBody().getString().isBlank())
                     bodyString = parseResponseBody(r.getBody().getObject());
@@ -250,10 +276,15 @@ public class HttpSession<I, O> implements Session {
         }
 
         logger.debug("Sent response");
-        // logger.warn("Could not respond to message");
-        // errorHandling();
     }
 
+    // #region parse response body
+    /**
+     * Parses response object to string for writing the response
+     * 
+     * @param body Body to parse
+     * @return String representation of the body
+     */
     private String parseResponseBody(O body) {
         try {
             return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(body);

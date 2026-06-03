@@ -12,6 +12,8 @@ import org.koppe.cuf.mail.server.http.entities.Path;
 import org.koppe.cuf.mail.server.http.entities.Request;
 import org.koppe.cuf.mail.server.http.entities.Response;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.Getter;
 
 public class HttpInitializerTest {
@@ -26,8 +28,9 @@ public class HttpInitializerTest {
             private boolean asList = false;
 
             @Override
-            public Class<Void> getInputType() {
-                return Void.class;
+            public TypeReference<Void> getInputType() {
+                return new TypeReference<Void>() {
+                };
             }
 
             @Override
@@ -43,7 +46,7 @@ public class HttpInitializerTest {
             }
 
             @Override
-            public Class<String> getOutputType() {
+            public TypeReference<String> getOutputType() {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'getOutputType'");
             }

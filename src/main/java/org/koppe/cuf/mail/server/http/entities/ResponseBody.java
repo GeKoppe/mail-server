@@ -1,5 +1,7 @@
 package org.koppe.cuf.mail.server.http.entities;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.Getter;
 
 public interface ResponseBody<T> extends Body {
@@ -16,7 +18,7 @@ public interface ResponseBody<T> extends Body {
      * @param mediaType Media type of the response body
      * @return Created response body
      */
-    public static <T> ResponseBody<T> of(T object, Class<T> clazz, String mediaType) {
+    public static <T> ResponseBody<T> of(T object, TypeReference<T> clazz, String mediaType) {
         return of(object, clazz, MediaType.ofValue(mediaType));
     }
 
@@ -29,7 +31,7 @@ public interface ResponseBody<T> extends Body {
      * @param m   Media type of the response body
      * @return Created response body
      */
-    public static <T> ResponseBody<T> of(T o, Class<T> c, MediaType m) {
+    public static <T> ResponseBody<T> of(T o, TypeReference<T> c, MediaType m) {
         return new ResponseBody<T>() {
             @Getter
             private String string;
@@ -40,7 +42,7 @@ public interface ResponseBody<T> extends Body {
         };
     }
 
-    public static <T> ResponseBody<T> of(String s, T o, Class<T> c, MediaType m) {
+    public static <T> ResponseBody<T> of(String s, T o, TypeReference<T> c, MediaType m) {
         return new ResponseBody<T>() {
             @Getter
             private String string = s;

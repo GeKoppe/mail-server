@@ -55,7 +55,9 @@ public class HttpServer implements Server {
      * Thread factory
      */
     private final ThreadFactory vThreadFactory = Thread.ofVirtual().factory();
-
+    /**
+     * List of all known endpoints
+     */
     private static Map<Path, Map<Method, Endpoint<?, ?>>> endpoints = new HashMap<>();
 
     // #region setup
@@ -137,7 +139,7 @@ public class HttpServer implements Server {
                     notFound(writer, firstLine);
                     writer.close();
                     reader.close();
-                    socket.close();
+                    clientSocket.close();
                     cleanSessions();
                     continue;
                 }
@@ -346,7 +348,7 @@ public class HttpServer implements Server {
      */
     @Override
     public synchronized <T, I> void notify(Event<T, I> event) {
-        logger.trace("Caught event {}", event);
+        logger.debug("Caught event {}", event);
         if (event instanceof StatusChangeEvent e) {
             if (e.getInformation() == StatusChange.DONE) {
                 removeSession(e.getCause());

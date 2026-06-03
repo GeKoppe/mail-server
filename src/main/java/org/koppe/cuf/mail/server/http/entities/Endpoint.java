@@ -1,5 +1,7 @@
 package org.koppe.cuf.mail.server.http.entities;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 /**
  * Represents an http endpoint. All classes extending this interface are
  * searched for by the reflections library and instantiated automatically.
@@ -24,14 +26,14 @@ public interface Endpoint<I, O> {
      * 
      * @return Type of body this endpoint expects
      */
-    public Class<I> getInputType();
+    public TypeReference<I> getInputType();
 
     /**
      * Type of the reponse body
      * 
      * @return Type of the reponse body
      */
-    public Class<O> getOutputType();
+    public TypeReference<O> getOutputType();
 
     /**
      * Actual logic behind the endpoint

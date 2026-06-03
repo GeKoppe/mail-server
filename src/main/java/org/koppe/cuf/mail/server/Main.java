@@ -12,11 +12,11 @@ import org.koppe.cuf.mail.server.smtp.SmtpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Server {
+public class Main {
 	/**
 	 * Logger
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(Server.class);
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
 	public static void main(String[] args) {
 		LocalDateTime startup = LocalDateTime.now();

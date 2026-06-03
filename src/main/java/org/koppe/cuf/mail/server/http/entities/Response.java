@@ -2,6 +2,8 @@ package org.koppe.cuf.mail.server.http.entities;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +33,7 @@ public interface Response<T> extends HttpMessage {
     @Override
     public ResponseBody<T> getBody();
 
-    public static <T> Response<T> of(int c, String m, ResponseBody<T> b, Class<T> cl) {
+    public static <T> Response<T> of(int c, String m, ResponseBody<T> b, TypeReference<T> cl) {
         return new Response<T>() {
             @Getter
             private int code = c;

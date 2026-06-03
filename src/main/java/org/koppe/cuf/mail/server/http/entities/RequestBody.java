@@ -2,6 +2,8 @@ package org.koppe.cuf.mail.server.http.entities;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.Getter;
 
 /**
@@ -25,7 +27,7 @@ public interface RequestBody<T> extends Body {
      * @param clazz Type of the entity the request body should represent
      * @return The created request body
      */
-    public static <T> RequestBody<T> of(String body, Class<T> clazz) {
+    public static <T> RequestBody<T> of(String body, TypeReference<T> clazz) {
         return new RequestBody<T>() {
             /**
              * Value of the inputstream
@@ -48,7 +50,7 @@ public interface RequestBody<T> extends Body {
      * @param clazz Type of the entity the request body should represent
      * @return The created request body
      */
-    public static <T> RequestBody<T> of(T o, Class<T> clazz) {
+    public static <T> RequestBody<T> of(T o, TypeReference<T> clazz) {
         return new RequestBody<T>() {
             /**
              * String representation of the body
@@ -63,7 +65,7 @@ public interface RequestBody<T> extends Body {
         };
     }
 
-    public static <T> RequestBody<T> of(T o, String s, Class<T> clazz) {
+    public static <T> RequestBody<T> of(T o, String s, TypeReference<T> clazz) {
         return new RequestBody<T>() {
             @Getter
             private String string = s;
@@ -72,7 +74,7 @@ public interface RequestBody<T> extends Body {
         };
     }
 
-    public static <T> RequestBody<T> empty(Class<T> clazz) {
+    public static <T> RequestBody<T> empty(TypeReference<T> clazz) {
         return new RequestBody<T>() {
             @Getter
             private String string = null;

@@ -2,6 +2,8 @@ package org.koppe.cuf.mail.server.http.entities;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,7 +56,7 @@ public interface Request<T> extends HttpMessage {
      * @param type Type of the body
      * @return An empty request instance
      */
-    public static <T> Request<T> empty(Class<T> type) {
+    public static <T> Request<T> empty(TypeReference<T> type) {
         return new Request<T>() {
             @Getter
             @Setter

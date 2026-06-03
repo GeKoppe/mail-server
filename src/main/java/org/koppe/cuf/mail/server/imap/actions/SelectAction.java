@@ -8,6 +8,7 @@ import org.koppe.cuf.mail.server.imap.state.ImapState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("unused")
 public class SelectAction implements CommandAction<ImapState, ImapContext> {
     /**
      * Logger

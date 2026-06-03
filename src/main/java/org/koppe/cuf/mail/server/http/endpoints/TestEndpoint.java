@@ -1,8 +1,6 @@
 package org.koppe.cuf.mail.server.http.endpoints;
 
-import java.util.Map;
-
-import org.koppe.cuf.mail.server.common.mail.Mail;
+import java.util.HashMap;
 import org.koppe.cuf.mail.server.http.entities.Endpoint;
 import org.koppe.cuf.mail.server.http.entities.MediaType;
 import org.koppe.cuf.mail.server.http.entities.Method;
@@ -14,15 +12,13 @@ import org.koppe.cuf.mail.server.http.entities.ResponseBody;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
-import lombok.ToString;
 
-@ToString
-public class GetMailEndpoint implements Endpoint<Void, Mail> {
+public class TestEndpoint implements Endpoint<Void, String> {
     /**
      * Path of the endpoint
      */
     @Getter
-    private final Path path = Path.of("/mails/{id}", Map.of("id", "Integer"));
+    private final Path path = Path.of("/test", new HashMap<>());
     /**
      * Method of the endpoint
      */
@@ -38,7 +34,7 @@ public class GetMailEndpoint implements Endpoint<Void, Mail> {
      * Type of response body
      */
     @Getter
-    private final TypeReference<Mail> outputType = new TypeReference<Mail>() {
+    private final TypeReference<String> outputType = new TypeReference<String>() {
     };
     /**
      * This endpoint needs authentication
@@ -48,23 +44,9 @@ public class GetMailEndpoint implements Endpoint<Void, Mail> {
     @Getter
     private boolean asList;
 
-    /**
-     * Handles the
-     */
     @Override
-    public Response<Mail> handle(Request<Void> i) {
-        if (i.getQuery().containsKey("only_body") && i.getQuery().get("only_body").equals("true")) {
-            return Response.of(200, "OK",
-                    ResponseBody.of("{\"body\":\"Test\"}", null, outputType, MediaType.APPLICATION_JSON), outputType);
-        }
-        Mail mail = new Mail();
-        mail.setBody("Test");
-        mail.setFrom("test@test.com");
-        mail.setSubject("Test");
-        mail.getCc().add("cc@test.com");
-        mail.getHeader().put("Test", "Test");
-        return Response.of(200, "OK",
-                ResponseBody.of(mail, outputType, MediaType.APPLICATION_JSON), outputType);
+    public Response<String> handle(Request<Void> i) {
+        return Response.of(200, "Ok", ResponseBody.of("Hello World", null, outputType, MediaType.APPLICATION_JSON),
+                outputType);
     }
-
 }

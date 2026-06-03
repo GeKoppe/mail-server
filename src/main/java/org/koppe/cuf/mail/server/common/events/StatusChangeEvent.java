@@ -6,8 +6,10 @@ import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @AllArgsConstructor
+@ToString
 public class StatusChangeEvent implements Event<Session, StatusChange> {
     @Getter
     private Session cause;
