@@ -6,10 +6,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import javax.naming.OperationNotSupportedException;
-
+import org.koppe.cuf.mail.server.common.Server;
+import org.koppe.cuf.mail.server.common.Session;
 import org.koppe.cuf.mail.server.common.mail.Mail;
-import org.koppe.cuf.mail.server.common.mail.Session;
 import org.koppe.cuf.mail.server.imap.state.ImapContext;
 import org.koppe.cuf.mail.server.imap.state.ImapRequestHandler;
 import org.koppe.cuf.mail.server.imap.state.ImapState;
@@ -103,20 +102,15 @@ public class ImapSession implements Session {
         }
     }
 
-    // #region
-    /**
-     * NOT IMPLEMENTED
-     * 
-     * @throws OperationNotSupportedException Always
-     */
-    @Override
-    public Mail getMail() throws OperationNotSupportedException {
-        throw new UnsupportedOperationException("Unimplemented method 'getMail'");
-    }
-
     @Override
     public boolean isActive() {
         return context.isActive();
+    }
+
+    @Override
+    public void addSubscribedServer(Server server) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addSubscribedServer'");
     }
 
 }

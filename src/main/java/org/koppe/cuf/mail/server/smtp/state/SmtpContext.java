@@ -22,4 +22,10 @@ public class SmtpContext implements Context<SmtpState, SmtpCommand> {
     private Map<String, String> arguments;
     private volatile boolean active;
     private volatile SmtpCommand clientCommand;
+
+    @Override
+    public void close() throws Exception {
+        reader.close();
+        writer.close();
+    }
 }

@@ -8,7 +8,7 @@ import java.util.Map;
  * Represents current protocol context, including current state, reader and
  * writer for in- and outputstream etc.
  */
-public interface Context<T extends State, C extends Command<T>> {
+public interface Context<T extends State, C extends Command<T>> extends AutoCloseable {
     /**
      * Gets current state of communication
      * 

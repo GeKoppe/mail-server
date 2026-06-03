@@ -20,7 +20,6 @@ public interface Interceptor<T extends State, C extends Command<T>> {
      * Intercepts communication.
      * 
      * @param context Context of the communication to be intercepted
-     * @return The intercepted communication
      */
     public void intercept(Context<T, ? extends Command<T>> context) throws InterceptException;
 

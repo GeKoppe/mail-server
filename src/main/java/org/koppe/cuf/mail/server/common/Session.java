@@ -1,6 +1,4 @@
-package org.koppe.cuf.mail.server.common.mail;
-
-import javax.naming.OperationNotSupportedException;
+package org.koppe.cuf.mail.server.common;
 
 public interface Session extends Runnable {
     /**
@@ -15,5 +13,10 @@ public interface Session extends Runnable {
      */
     public void close();
 
-    public Mail getMail() throws OperationNotSupportedException;
+    /**
+     * Adds a server that subscribes to updates of this sessions status
+     * 
+     * @param server Server that should subscribe to this sessions status
+     */
+    public void addSubscribedServer(Server server);
 }

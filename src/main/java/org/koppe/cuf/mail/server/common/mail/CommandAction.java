@@ -10,7 +10,6 @@ public interface CommandAction<T extends State, C extends Context<T, ? extends C
      * Execution of the action
      * 
      * @param c Current communication context
-     * @param l A logger
      */
     public void apply(C c);
 }

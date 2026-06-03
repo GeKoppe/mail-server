@@ -7,9 +7,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import org.koppe.cuf.mail.server.common.Interceptor;
+import org.koppe.cuf.mail.server.common.Server;
+import org.koppe.cuf.mail.server.common.Session;
 import org.koppe.cuf.mail.server.common.mail.Command;
 import org.koppe.cuf.mail.server.common.mail.Mail;
-import org.koppe.cuf.mail.server.common.mail.Session;
 import org.koppe.cuf.mail.server.smtp.state.SmtpContext;
 import org.koppe.cuf.mail.server.smtp.state.SmtpRequestHandler;
 import org.koppe.cuf.mail.server.smtp.state.SmtpState;
@@ -120,5 +121,11 @@ public class SmtpSession implements Session {
 
     public void addInterceptor(Interceptor<SmtpState, ? extends Command<SmtpState>> interceptor) {
         machine.addInterceptor(interceptor);
+    }
+
+    @Override
+    public void addSubscribedServer(Server server) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addSubscribedServer'");
     }
 }

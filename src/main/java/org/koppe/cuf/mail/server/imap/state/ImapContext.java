@@ -98,4 +98,10 @@ public class ImapContext implements Context<ImapState, ImapCommand> {
         clientErrors++;
     }
 
+    @Override
+    public void close() throws Exception {
+        reader.close();
+        writer.close();
+    }
+
 }

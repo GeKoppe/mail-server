@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
+import org.koppe.cuf.mail.server.common.Event;
+import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
-import org.koppe.cuf.mail.server.common.mail.Server;
 import org.koppe.cuf.mail.server.common.mail.SessionEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,6 +144,12 @@ public final class SmtpServer implements Server {
         synchronized (this) {
             running = false;
         }
+    }
+
+    @Override
+    public <T, I> void notify(Event<T, I> event) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'notify'");
     }
 
 }
