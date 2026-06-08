@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
+import javax.net.ssl.SSLSocket;
+
 import org.koppe.cuf.mail.server.common.Event;
 import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.Session;
+import org.koppe.cuf.mail.server.common.TLSContext;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
@@ -42,6 +45,10 @@ public class HttpServer implements Server {
      * Port the server is running on
      */
     private final int port;
+    /**
+     * True, if tls is to be used
+     */
+    private final boolean useTls;
     /**
      * Server socket
      */
@@ -99,6 +106,15 @@ public class HttpServer implements Server {
             try {
                 Socket clientSocket = socket.accept();
                 logger.info("New client connection on {}", clientSocket);
+                if (useTls) {
+                    logger.debug("Wrapping tls");
+                    Socket tls = wrapTls(clientSocket);
+                    if (tls == null) {
+                        logger.error("Fatal error, could not build ssl socket for client connection");
+                        break;
+                    }
+                    clientSocket = tls;
+                }
 
                 FirstLine firstLine = null;
                 BufferedReader reader = null;
@@ -168,6 +184,20 @@ public class HttpServer implements Server {
         logger.info("Server is about to shut down");
         endSessions();
         running = false;
+    }
+
+    private Socket wrapTls(Socket socket) {
+        try {
+            SSLSocket tls = (SSLSocket) TLSContext.getInstance().getSocketFactory().createSocket(socket,
+                    socket.getInputStream(),
+                    true);
+            tls.setUseClientMode(false);
+            tls.startHandshake();
+            return tls;
+        } catch (IOException | StartupException e) {
+            logger.error("Could not build tls socket due to exception", e);
+            return null;
+        }
     }
 
     // #region error handling
@@ -275,7 +305,12 @@ public class HttpServer implements Server {
         sessions.remove(e);
     }
 
-    private synchronized void removeSession(Session s) {
+    /**
+     * Removes session from list of all sessions
+     * 
+     * @param s Session to remove
+     */
+    private void removeSession(Session s) {
         SessionEntry toRemove = null;
         for (var x : sessions) {
             if (x.session().equals(s)) {

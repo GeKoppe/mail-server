@@ -1,0 +1,29 @@
+package org.koppe.cuf.mail.server.config;
+
+public class EnvironmentConfig {
+    // #region network
+    /**
+     * HTTP port
+     */
+    public static final String HTTP_PORT = "HTTP_PORT";
+    /**
+     * HTTPS port
+     */
+    public static final String HTTPS_PORT = "HTTPS_PORT";
+    /**
+     * SMTP port
+     */
+    public static final String SMTP_PORT = "SMTP_PORT";
+    /**
+     * SMTPS port
+     */
+    public static final String SMTPS_PORT = "SMTPS_PORT";
+    /**
+     * IMAP port
+     */
+    public static final String IMAP_PORT = "IMAP_PORT";
+    /**
+     * IMAPS port
+     */
+    public static final String IMAPS_PORT = "IMAPS_PORT";
+}

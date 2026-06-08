@@ -29,7 +29,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class HttpServerTest {
-    private static HttpServer server = new HttpServer(6666);
+    private static HttpServer server = new HttpServer(6666, false);
     private static Thread thread;
 
     @BeforeAll

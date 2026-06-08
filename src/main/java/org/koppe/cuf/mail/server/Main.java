@@ -5,8 +5,12 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.concurrent.ThreadFactory;
 
+import javax.naming.ConfigurationException;
+
+import org.koppe.cuf.mail.server.common.ConfigInitializer;
 import org.koppe.cuf.mail.server.common.HttpInitializer;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
+import org.koppe.cuf.mail.server.config.NetworkConfig;
 import org.koppe.cuf.mail.server.http.HttpServer;
 import org.koppe.cuf.mail.server.smtp.SmtpServer;
 import org.slf4j.Logger;
@@ -45,14 +49,23 @@ public class Main {
 			return;
 		}
 
-		SmtpServer smtp = new SmtpServer(hostname, 2525);
-		HttpServer http = new HttpServer(8080);
+		try {
+			ConfigInitializer.execute();
+		} catch (ConfigurationException ex) {
+			logger.error("Could not load configuration due to an exception", ex);
+			return;
+		}
+
+		SmtpServer smtp = new SmtpServer(hostname, NetworkConfig.SMTP_PORT);
+		HttpServer http = new HttpServer(NetworkConfig.HTTP_PORT, false);
+		HttpServer https = new HttpServer(NetworkConfig.HTTPS_PORT, true);
 		// ImapServer imap = new ImapServer(6666, hostname);
 
 		ThreadFactory f = Thread.ofVirtual().factory();
 
 		f.newThread(smtp).start();
 		f.newThread(http).start();
+		f.newThread(https).start();
 		// f.newThread(imap).start();
 
 		logger.info("Startup of mail server finished at {}", LocalDateTime.now());
