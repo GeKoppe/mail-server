@@ -45,8 +45,6 @@ public class GetMailEndpoint implements Endpoint<Void, Mail> {
      */
     @Getter
     private boolean authenticated = true;
-    @Getter
-    private boolean asList;
 
     /**
      * Handles the

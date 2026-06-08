@@ -75,11 +75,6 @@ public class HttpServerTest {
             public boolean isAuthenticated() {
                 return false;
             }
-
-            @Override
-            public boolean isAsList() {
-                return false;
-            }
         };
 
         HttpInitializer.announce(ep);
@@ -93,9 +88,13 @@ public class HttpServerTest {
     }
 
     @AfterAll
-    public static void shutdown() throws InterruptedException {
-        server.shutdown();
-        thread.join();
+    public static void shutdown() {
+        try {
+            server.shutdown();
+            thread.join();
+        } catch (Throwable ex) {
+
+        }
     }
 
     @Test

@@ -49,6 +49,4 @@ public interface Endpoint<I, O> {
      * @return true, if client needs to be authenticated for this endpoint
      */
     public boolean isAuthenticated();
-
-    public boolean isAsList();
 }

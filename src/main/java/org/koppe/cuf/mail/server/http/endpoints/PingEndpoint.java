@@ -13,12 +13,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
 
-public class TestEndpoint implements Endpoint<Void, String> {
+public class PingEndpoint implements Endpoint<Void, Void> {
     /**
      * Path of the endpoint
      */
     @Getter
-    private final Path path = Path.of("/test", new HashMap<>());
+    private final Path path = Path.of("/ping", new HashMap<>());
     /**
      * Method of the endpoint
      */
@@ -34,7 +34,7 @@ public class TestEndpoint implements Endpoint<Void, String> {
      * Type of response body
      */
     @Getter
-    private final TypeReference<String> outputType = new TypeReference<String>() {
+    private final TypeReference<Void> outputType = new TypeReference<Void>() {
     };
     /**
      * This endpoint needs authentication
@@ -45,8 +45,8 @@ public class TestEndpoint implements Endpoint<Void, String> {
     private boolean asList;
 
     @Override
-    public Response<String> handle(Request<Void> i) {
-        return Response.of(200, "Ok", ResponseBody.of("Hello World", null, outputType, MediaType.APPLICATION_JSON),
+    public Response<Void> handle(Request<Void> i) {
+        return Response.of(200, "Ok", ResponseBody.of(null, null, outputType, MediaType.APPLICATION_JSON),
                 outputType);
     }
 }

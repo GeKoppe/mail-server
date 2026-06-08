@@ -316,6 +316,8 @@ public class HttpServer implements Server {
                 socket.close();
         } catch (IOException e) {
             logger.warn("Could not close socket {}", socket);
+        } catch (NullPointerException ex) {
+            logger.error("How did this even happen?");
         }
     }
 
