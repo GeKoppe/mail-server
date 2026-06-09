@@ -47,12 +47,12 @@ public class ConfigInitializer {
             logger.info("Initializing network config");
             logger.debug("Loading environment variables");
 
-            Integer http = System.getenv(HTTP_PORT) != null ? Integer.parseInt(System.getenv(HTTP_PORT)) : 80;
-            Integer https = System.getenv(HTTPS_PORT) != null ? Integer.parseInt(System.getenv(HTTPS_PORT)) : 443;
-            Integer smtp = System.getenv(SMTP_PORT) != null ? Integer.parseInt(System.getenv(SMTP_PORT)) : 25;
-            Integer smtps = System.getenv(SMTPS_PORT) != null ? Integer.parseInt(System.getenv(SMTPS_PORT)) : 587;
-            Integer imap = System.getenv(IMAP_PORT) != null ? Integer.parseInt(System.getenv(IMAP_PORT)) : 143;
-            Integer imaps = System.getenv(IMAPS_PORT) != null ? Integer.parseInt(System.getenv(IMAPS_PORT)) : 993;
+            Integer http = System.getenv(HTTP_PORT) != null ? Integer.parseInt(System.getenv(HTTP_PORT)) : 6600;
+            Integer https = System.getenv(HTTPS_PORT) != null ? Integer.parseInt(System.getenv(HTTPS_PORT)) : 6603;
+            Integer smtp = System.getenv(SMTP_PORT) != null ? Integer.parseInt(System.getenv(SMTP_PORT)) : 6500;
+            Integer smtps = System.getenv(SMTPS_PORT) != null ? Integer.parseInt(System.getenv(SMTPS_PORT)) : 6503;
+            Integer imap = System.getenv(IMAP_PORT) != null ? Integer.parseInt(System.getenv(IMAP_PORT)) : 6400;
+            Integer imaps = System.getenv(IMAPS_PORT) != null ? Integer.parseInt(System.getenv(IMAPS_PORT)) : 6403;
             logger.debug(
                     "Loaded environment variables.\n\tHTTP: {}\n\tHTTPS: {}\n\tSMTP: {}\n\tSMTPS: {}\n\tIMAP: {}\n\tIMAPS: {}",
                     http, https,
@@ -76,13 +76,15 @@ public class ConfigInitializer {
     /**
      * Initializes the security configuration for the server
      * 
-     * @throws ConfigurationException 
+     * @throws ConfigurationException
      */
     private static final void initSecurityConfig() throws ConfigurationException {
         logger.info("Loading security config from environment");
         try {
-            SecurityConfig.KEYSTORE_PATH = System.getenv(KEYSTORE_PATH);
-            SecurityConfig.KEYSTORE_PASS = System.getenv(KEYSTORE_PASS);
+            SecurityConfig.KEYSTORE_PATH = System.getenv(KEYSTORE_PATH) != null ? System.getenv(KEYSTORE_PATH)
+                    : ConfigInitializer.class.getClassLoader().getResource("security/devstore.jks").getFile();
+            SecurityConfig.KEYSTORE_PASS = System.getenv(KEYSTORE_PASS) != null ? System.getenv(KEYSTORE_PASS)
+                    : "changeit";
             SecurityConfig.ALLOW_PLAIN = System.getenv(ALLOW_PLAIN) != null
                     && System.getenv(ALLOW_PLAIN).equals("True");
 

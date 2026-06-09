@@ -7,11 +7,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
-import javax.net.ssl.SSLSocket;
-
-import org.koppe.cuf.mail.server.common.TLSContext;
-import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.common.mail.WritingUtils;
+import org.koppe.cuf.mail.server.common.security.TLSWrapper;
 import org.koppe.cuf.mail.server.http.entities.Endpoint;
 import org.koppe.cuf.mail.server.http.entities.Method;
 import org.slf4j.Logger;
@@ -74,7 +71,7 @@ public class ConnectionHandler {
         logger.debug("Starting session build up for incoming connection");
         if (server.isUseTls()) {
             logger.debug("Server uses tls, wrapping socket");
-            if ((socket = wrapTls(socket)) == null) {
+            if ((socket = TLSWrapper.wrapTls(socket)) == null) {
                 logger.error("Could not wrap socket in tls");
                 errorHandling();
                 return;
@@ -126,26 +123,6 @@ public class ConnectionHandler {
 
     private void notFound() {
         WritingUtils.write(writer, "" + firstLine.protocol() + " 404 Not Found");
-    }
-
-    /**
-     * Wraps the socket in TLS
-     * 
-     * @param socket Socket to wrap
-     * @return The wrapped socket or null, if socket could not be wrapped
-     */
-    private Socket wrapTls(Socket socket) {
-        try {
-            SSLSocket tls = (SSLSocket) TLSContext.getInstance().getSocketFactory().createSocket(socket,
-                    socket.getInputStream(),
-                    true);
-            tls.setUseClientMode(false);
-            tls.startHandshake();
-            return tls;
-        } catch (IOException | StartupException e) {
-            logger.error("Could not build tls socket due to exception", e);
-            return null;
-        }
     }
 
     // #region read first line

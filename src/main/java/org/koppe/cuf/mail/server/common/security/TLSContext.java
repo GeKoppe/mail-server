@@ -1,4 +1,4 @@
-package org.koppe.cuf.mail.server.common;
+package org.koppe.cuf.mail.server.common.security;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -11,7 +11,10 @@ import javax.net.ssl.TrustManagerFactory;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.config.SecurityConfig;
 
-public class TLSContext {
+/**
+ * Contains the ssl context instance used across the system.
+ */
+public abstract class TLSContext {
     /**
      * SSL context
      */

@@ -16,34 +16,30 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @ToString
 public class GetMailEndpoint implements Endpoint<Void, Mail> {
     /**
      * Path of the endpoint
      */
-    @Getter
     private final Path path = Path.of("/mails/{id}", Map.of("id", "Integer"));
     /**
      * Method of the endpoint
      */
-    @Getter
     private Method method = Method.GET;
     /**
      * Type of the body allowed on this endpoint
      */
-    @Getter
     private final TypeReference<Void> inputType = new TypeReference<Void>() {
     };
     /**
      * Type of response body
      */
-    @Getter
     private final TypeReference<Mail> outputType = new TypeReference<Mail>() {
     };
     /**
      * This endpoint needs authentication
      */
-    @Getter
     private boolean authenticated = true;
 
     /**

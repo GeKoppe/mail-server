@@ -100,24 +100,32 @@ public class HttpServer implements Server {
             try {
                 Socket clientSocket = socket.accept();
                 logger.info("New client connection on {}", clientSocket);
-                ConnectionHandler handler = new ConnectionHandler(this);
-                handler.handle(clientSocket);
+                vThreadFactory.newThread(() -> {
+                    ConnectionHandler handler = new ConnectionHandler(this);
+                    handler.handle(clientSocket);
+                    if (!handler.isSuccessful()) {
+                        logger.warn("Handler could not build connection to client");
+                        return;
+                    }
+                    HttpSession<?, ?> session = HttpSession.of(clientSocket, handler.getFirstLine(),
+                            handler.getEndpoint(),
+                            handler.getReader(),
+                            handler.getWriter());
 
-                HttpSession<?, ?> session = HttpSession.of(clientSocket, handler.getFirstLine(), handler.getEndpoint(),
-                        handler.getReader(),
-                        handler.getWriter());
+                    session.addSubscribedServer(this);
+                    logger.debug("Initialised session for client connection");
 
-                session.addSubscribedServer(this);
-                logger.debug("Initialised session for client connection");
+                    Thread thread = vThreadFactory.newThread(session);
+                    logger.debug("Initialised thread for client session");
 
-                Thread thread = vThreadFactory.newThread(session);
-                logger.debug("Initialised thread for client session");
+                    SessionEntry ent = new SessionEntry(thread, session);
+                    synchronized (sessions) {
+                        sessions.add(ent);
+                    }
+                    thread.start();
 
-                SessionEntry ent = new SessionEntry(thread, session);
-                sessions.add(ent);
-                thread.start();
-
-                logger.info("Started thread for client connection");
+                    logger.info("Started thread for client connection");
+                }).start();
             } catch (IOException e) {
 
             }
@@ -136,20 +144,22 @@ public class HttpServer implements Server {
         logger.debug("Cleaning up sessions that have ended");
         List<SessionEntry> toRemove = new ArrayList<>();
 
-        sessions.forEach(s -> {
-            if (s.session().isActive())
-                return;
-            logger.debug("Session {} has ended, cleaning up", s);
+        synchronized (sessions) {
+            sessions.forEach(s -> {
+                if (s.session().isActive())
+                    return;
+                logger.debug("Session {} has ended, cleaning up", s);
 
-            try {
-                if (s.thread().isAlive())
-                    s.thread().join();
-            } catch (InterruptedException ex) {
-                logger.warn("Could not join thread {}", s.thread(), ex);
-                return;
-            }
-            toRemove.add(s);
-        });
+                try {
+                    if (s.thread().isAlive())
+                        s.thread().join();
+                } catch (InterruptedException ex) {
+                    logger.warn("Could not join thread {}", s.thread(), ex);
+                    return;
+                }
+                toRemove.add(s);
+            });
+        }
         logger.debug("{} sessions to clean up: {}", toRemove.size(), toRemove);
         toRemove.forEach(t -> removeSession(t));
     }
@@ -159,8 +169,10 @@ public class HttpServer implements Server {
      * 
      * @param e Session to remove
      */
-    private synchronized void removeSession(SessionEntry e) {
-        sessions.remove(e);
+    private void removeSession(SessionEntry e) {
+        synchronized (sessions) {
+            sessions.remove(e);
+        }
     }
 
     /**
@@ -186,19 +198,21 @@ public class HttpServer implements Server {
     /**
      * Ends all sessions at shutdown
      */
-    private synchronized void endSessions() {
+    private void endSessions() {
         logger.debug("Trying to gracefully shut down sessions");
-        sessions.forEach(s -> {
-            logger.debug("Ending session {}", s);
-            try {
-                if (s.thread().isAlive())
-                    s.thread().join();
+        synchronized (sessions) {
+            sessions.forEach(s -> {
+                logger.debug("Ending session {}", s);
+                try {
+                    if (s.thread().isAlive())
+                        s.thread().join();
 
-                logger.debug("Ended thread {}", s.thread());
-            } catch (InterruptedException e) {
-                logger.warn("Could not join thread {}", s.thread(), e);
-            }
-        });
+                    logger.debug("Ended thread {}", s.thread());
+                } catch (InterruptedException e) {
+                    logger.warn("Could not join thread {}", s.thread(), e);
+                }
+            });
+        }
     }
 
     // #region shutdown

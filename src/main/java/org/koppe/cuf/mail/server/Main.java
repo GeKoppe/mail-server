@@ -13,6 +13,7 @@ import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
+import org.koppe.cuf.mail.server.config.SecurityConfig;
 import org.koppe.cuf.mail.server.http.HttpServer;
 import org.koppe.cuf.mail.server.smtp.SmtpServer;
 import org.slf4j.Logger;
@@ -106,10 +107,14 @@ public class Main {
 			throw ex;
 		}
 
-		HttpServer http = new HttpServer(NetworkConfig.HTTP_PORT, false);
 		HttpServer https = new HttpServer(NetworkConfig.HTTPS_PORT, true);
 		runningInstances.add(https);
-		runningInstances.add(http);
+
+		if (SecurityConfig.ALLOW_PLAIN) {
+			logger.debug("Plain http messages are allowed");
+			HttpServer http = new HttpServer(NetworkConfig.HTTP_PORT, false);
+			runningInstances.add(http);
+		}
 
 		return;
 	}
