@@ -1,10 +1,6 @@
 package org.koppe.cuf.mail.server.http;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -13,23 +9,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
-import javax.net.ssl.SSLSocket;
-
 import org.koppe.cuf.mail.server.common.Event;
 import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.Session;
-import org.koppe.cuf.mail.server.common.TLSContext;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.common.mail.SessionEntry;
-import org.koppe.cuf.mail.server.common.mail.WritingUtils;
 import org.koppe.cuf.mail.server.http.entities.Endpoint;
 import org.koppe.cuf.mail.server.http.entities.Method;
 import org.koppe.cuf.mail.server.http.entities.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -48,6 +41,7 @@ public class HttpServer implements Server {
     /**
      * True, if tls is to be used
      */
+    @Getter
     private final boolean useTls;
     /**
      * Server socket
@@ -106,64 +100,12 @@ public class HttpServer implements Server {
             try {
                 Socket clientSocket = socket.accept();
                 logger.info("New client connection on {}", clientSocket);
-                if (useTls) {
-                    logger.debug("Wrapping tls");
-                    Socket tls = wrapTls(clientSocket);
-                    if (tls == null) {
-                        logger.error("Fatal error, could not build ssl socket for client connection");
-                        break;
-                    }
-                    clientSocket = tls;
-                }
+                ConnectionHandler handler = new ConnectionHandler(this);
+                handler.handle(clientSocket);
 
-                FirstLine firstLine = null;
-                BufferedReader reader = null;
-                PrintWriter writer = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    writer = new PrintWriter(clientSocket.getOutputStream());
-                } catch (Exception ex) {
-                    logger.error("Could not initialize stream reader and writer");
-                    if (reader != null)
-                        reader.close();
-                    if (writer != null)
-                        writer.close();
-
-                    clientSocket.close();
-                    continue;
-                }
-
-                try {
-                    firstLine = getFirstLine(reader);
-                } catch (IOException ex) {
-                    logger.error("First line could not be analysed");
-                    reader.close();
-                    writer.close();
-                    clientSocket.close();
-                    cleanSessions();
-                    continue;
-                }
-
-                if (firstLine == null) {
-                    errorHandling(writer);
-                    reader.close();
-                    writer.close();
-                    clientSocket.close();
-                    cleanSessions();
-                    continue;
-                }
-                Endpoint<?, ?> e = getEndpoint(firstLine);
-                if (e == null) {
-                    logger.warn("Endpoint for given resource and method not found");
-                    notFound(writer, firstLine);
-                    writer.close();
-                    reader.close();
-                    clientSocket.close();
-                    cleanSessions();
-                    continue;
-                }
-                HttpSession<?, ?> session = HttpSession.of(clientSocket, firstLine, e, reader,
-                        writer);
+                HttpSession<?, ?> session = HttpSession.of(clientSocket, handler.getFirstLine(), handler.getEndpoint(),
+                        handler.getReader(),
+                        handler.getWriter());
 
                 session.addSubscribedServer(this);
                 logger.debug("Initialised session for client connection");
@@ -184,90 +126,6 @@ public class HttpServer implements Server {
         logger.info("Server is about to shut down");
         endSessions();
         running = false;
-    }
-
-    private Socket wrapTls(Socket socket) {
-        try {
-            SSLSocket tls = (SSLSocket) TLSContext.getInstance().getSocketFactory().createSocket(socket,
-                    socket.getInputStream(),
-                    true);
-            tls.setUseClientMode(false);
-            tls.startHandshake();
-            return tls;
-        } catch (IOException | StartupException e) {
-            logger.error("Could not build tls socket due to exception", e);
-            return null;
-        }
-    }
-
-    // #region error handling
-    /**
-     * Handles errors
-     * 
-     * @param socket Socket of the connection
-     */
-    private void errorHandling(PrintWriter w) {
-        return;
-    }
-
-    private void notFound(PrintWriter w, FirstLine f) {
-        WritingUtils.write(w, "" + f.protocol() + " 404 Not Found");
-    }
-
-    // #region get first line
-    /**
-     * Analyses the first line the client sent to initialize the session
-     * 
-     * @param socket Client socekt
-     * @return Representation of first http line
-     * @throws IOException If reader could not read
-     */
-    private FirstLine getFirstLine(BufferedReader reader) throws IOException {
-        String line = reader.readLine();
-        logger.debug("Call to {}", line);
-
-        String[] lineParts = line.split(" ");
-        Method m = Method.ofValue(lineParts[0]);
-        String resource = lineParts[1];
-        String protocol = lineParts[2];
-
-        return new FirstLine(resource, m, protocol);
-    }
-
-    protected Endpoint<?, ?> getEndpoint(FirstLine f) {
-        String temp = f.resource();
-
-        if (f.resource().contains("?")) {
-            temp = f.resource().substring(0, f.resource().indexOf("?"));
-        }
-
-        Endpoint<?, ?> e = null;
-        for (var x : endpoints.keySet()) {
-            if (x.matches(temp)) {
-                if (endpoints.get(x).get(f.method()) != null) {
-                    e = newInstance(endpoints.get(x).get(f.method()));
-                    break;
-                }
-            }
-        }
-        return e;
-    }
-
-    // #region new instance
-    /**
-     * Creates new instance of the endpoint called by client
-     * 
-     * @param e Endpoint to create a new instance of
-     * @return The instantiated endpoint
-     */
-    private Endpoint<?, ?> newInstance(Endpoint<?, ?> e) {
-        try {
-            return e.getClass().getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e1) {
-            logger.warn("Could not get a new instance of endpoint {}", e, e1);
-            return null;
-        }
     }
 
     // #region clean sessions
@@ -343,6 +201,10 @@ public class HttpServer implements Server {
         });
     }
 
+    // #region shutdown
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         running = false;
@@ -381,6 +243,15 @@ public class HttpServer implements Server {
         }
 
         endpoints.get(endpoint.getPath()).put(endpoint.getMethod(), endpoint);
+    }
+
+    /**
+     * Returns a map of all endpoints known to the server
+     * 
+     * @return map of all endpoints known to the server
+     */
+    public static Map<Path, Map<Method, Endpoint<?, ?>>> getEndpoints() {
+        return endpoints;
     }
 
     /**
