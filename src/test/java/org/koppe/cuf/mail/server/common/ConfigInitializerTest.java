@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.naming.ConfigurationException;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
 
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;

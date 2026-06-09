@@ -26,4 +26,15 @@ public class EnvironmentConfig {
      * IMAPS port
      */
     public static final String IMAPS_PORT = "IMAPS_PORT";
+
+    // #region security
+    /**
+     * Keystore path
+     */
+    public static final String KEYSTORE_PATH = "KEYSTORE_PATH";
+    /**
+     * Keystore password
+     */
+    public static final String KEYSTORE_PASS = "KEYSTORE_PASS";
+    public static final String ALLOW_PLAIN = "ALLOW_PLAIN";
 }

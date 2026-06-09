@@ -38,11 +38,11 @@ public class TLSContext {
     private static void buildContext() throws Exception {
         KeyStore kst = KeyStore.getInstance("JKS");
         try (InputStream is = new FileInputStream(SecurityConfig.KEYSTORE_PATH)) {
-            kst.load(is, SecurityConfig.KEYSTORE_PW.toCharArray());
+            kst.load(is, SecurityConfig.KEYSTORE_PASS.toCharArray());
         }
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(kst, SecurityConfig.KEYSTORE_PW.toCharArray());
+        kmf.init(kst, SecurityConfig.KEYSTORE_PASS.toCharArray());
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(kst);

@@ -2,16 +2,20 @@ package org.koppe.cuf.mail.server.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.ALLOW_PLAIN;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.HTTPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.HTTP_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAP_PORT;
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PASS;
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PATH;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTP_PORT;
 
-import javax.naming.ConfigurationException;
-
+import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
+import org.koppe.cuf.mail.server.config.SecurityConfig;
 
 /**
  * Initializer for all configs
@@ -30,6 +34,7 @@ public class ConfigInitializer {
     public static final void execute() throws ConfigurationException {
         logger.info("Initializing all server configs");
         initNetworkConfig();
+        initSecurityConfig();
     }
 
     /**
@@ -63,8 +68,38 @@ public class ConfigInitializer {
 
             logger.debug("Set all config values for network configuration");
         } catch (NumberFormatException ex) {
-            logger.info("Invalid configuration in one or more port configurations caused an exception.", ex);
+            logger.error("Invalid configuration in one or more port configurations caused an exception.", ex);
             throw new ConfigurationException("Invalid configuration in one or more port configurations");
+        }
+    }
+
+    /**
+     * Initializes the security configuration for the server
+     * 
+     * @throws ConfigurationException 
+     */
+    private static final void initSecurityConfig() throws ConfigurationException {
+        logger.info("Loading security config from environment");
+        try {
+            SecurityConfig.KEYSTORE_PATH = System.getenv(KEYSTORE_PATH);
+            SecurityConfig.KEYSTORE_PASS = System.getenv(KEYSTORE_PASS);
+            SecurityConfig.ALLOW_PLAIN = System.getenv(ALLOW_PLAIN) != null
+                    && System.getenv(ALLOW_PLAIN).equals("True");
+
+            if (!SecurityConfig.ALLOW_PLAIN
+                    && (SecurityConfig.KEYSTORE_PATH == null || SecurityConfig.KEYSTORE_PATH.isBlank()
+                            || SecurityConfig.KEYSTORE_PASS == null || SecurityConfig.KEYSTORE_PASS.isBlank())) {
+                logger.error(
+                        "Plain communication not allowed but keystore path and keystore pass are not defined in environment");
+                throw new ConfigurationException(
+                        "Plain communication not allowed but keystore path and keystore pass are not defined in environment");
+            }
+            logger.info("Initialised security config");
+        } catch (Exception ex) {
+            logger.error("Invalid configuration in on or more env variables", ex);
+            throw new ConfigurationException(
+                    "Plain communication not allowed but keystore path and keystore pass are not defined in environment",
+                    ex);
         }
     }
 }
