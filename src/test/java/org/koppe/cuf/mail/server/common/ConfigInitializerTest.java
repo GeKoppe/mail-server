@@ -30,7 +30,7 @@ public class ConfigInitializerTest {
         }
         assertEquals(1337, NetworkConfig.SMTP_PORT);
         assertEquals(6666, NetworkConfig.SMTPS_PORT);
-        assertEquals(80, NetworkConfig.HTTP_PORT);
+        assertEquals(6600, NetworkConfig.HTTP_PORT);
 
         env.set("HTTP_PORT", "HELLO WORLD");
         assertThrows(ConfigurationException.class, () -> ConfigInitializer.execute());

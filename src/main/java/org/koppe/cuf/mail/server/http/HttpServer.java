@@ -248,6 +248,8 @@ public class HttpServer implements Server {
             endpoints.put(endpoint.getPath(), new HashMap<>());
 
         if (endpoints.get(endpoint.getPath()).containsKey(endpoint.getMethod())) {
+            if (endpoints.get(endpoint.getPath()).get(endpoint.getMethod()) == endpoint)
+                return;
             logger.error("Could not register endpoint {}, combination of path and method already exists on endpoint {}",
                     endpoint, endpoints.get(endpoint.getPath()).get(endpoint.getMethod()));
             throw new StartupException(

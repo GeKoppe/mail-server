@@ -15,6 +15,7 @@ import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.mail.WritingUtils;
 import org.koppe.cuf.mail.server.http.entities.Endpoint;
+import org.koppe.cuf.mail.server.http.entities.HttpCode;
 import org.koppe.cuf.mail.server.http.entities.Request;
 import org.koppe.cuf.mail.server.http.entities.RequestBody;
 import org.koppe.cuf.mail.server.http.entities.Response;
@@ -93,7 +94,10 @@ public class HttpSession<I, O> implements Session {
             return;
         }
 
+        logger.debug("Givign built request to endpoint to handle");
         Response<O> response = endpoint.handle(request);
+        logger.debug("Endpoint handled request, initializing response handling");
+
         try {
             handleResponse(response);
         } catch (IOException e) {
@@ -182,6 +186,14 @@ public class HttpSession<I, O> implements Session {
         logger.info("Built request");
     }
 
+    /**
+     * Reads the number of bytes given in length, to extract body from the input
+     * stream.
+     * 
+     * @param length Length of the body
+     * @return Read body
+     * @throws IOException If the stream could not be read
+     */
     private String readBody(int length) throws IOException {
         char[] buffer = new char[length];
         int read = 0;
@@ -259,7 +271,7 @@ public class HttpSession<I, O> implements Session {
         HttpCode c = HttpCode.ofCode(r.getCode());
         logger.debug("Code {}", c);
 
-        WritingUtils.write(writer, "" + firstLine.protocol() + " " + c.code + " " + c.info);
+        WritingUtils.write(writer, "" + firstLine.protocol() + " " + c.getCode() + " " + c.getInfo());
 
         logger.debug("Writing server headers");
         serverHeaders.entrySet().forEach(s -> {
@@ -335,29 +347,6 @@ public class HttpSession<I, O> implements Session {
         }
 
         active = false;
-    }
-
-    @ToString
-    @RequiredArgsConstructor
-    private static enum HttpCode {
-        OK(200, "OK"),
-        NO_CONTENT(204, "No Content"),
-        BAD_REQUEST(400, "Bad Request"),
-        FORBIDDEN(403, "Forbidden"),
-        SERVER_ERROR(500, "Internal Server Error");
-
-        @Getter
-        private final int code;
-        @Getter
-        private final String info;
-
-        public static HttpCode ofCode(int code) {
-            for (var x : values()) {
-                if (x.code == code)
-                    return x;
-            }
-            return SERVER_ERROR;
-        }
     }
 
     // #region of
