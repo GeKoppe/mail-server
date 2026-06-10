@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.koppe.cuf.mail.server.common.mail.Mail;
 import org.koppe.cuf.mail.server.http.dto.LoginDto;
 import org.koppe.cuf.mail.server.http.endpoints.GetMailEndpoint;
-import org.koppe.cuf.mail.server.http.endpoints.Login;
+import org.koppe.cuf.mail.server.http.endpoints.LoginEndpoint;
 import org.koppe.cuf.mail.server.http.entities.Method;
 
 public class HttpSessionTest {
@@ -39,7 +39,7 @@ public class HttpSessionTest {
 
         Socket socket2 = mock(Socket.class);
         HttpSession<LoginDto, Void> s2 = HttpSession.of(socket2,
-                new FirstLine("/login", Method.GET, "HTTP/1.1"), new Login(),
+                new FirstLine("/login", Method.GET, "HTTP/1.1"), new LoginEndpoint(),
                 new BufferedReader(new InputStreamReader(is2)), new PrintWriter(os2));
         s2.run();
         System.out.println(os2.toString());

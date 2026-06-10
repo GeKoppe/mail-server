@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
 
-public class Login implements Endpoint<LoginDto, Void> {
+public class LoginEndpoint implements Endpoint<LoginDto, Void> {
     @Getter
     private Method method = Method.POST;
     @Getter

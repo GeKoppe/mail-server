@@ -34,13 +34,23 @@ public interface Path {
      */
     public boolean matches(String path);
 
-    public boolean equals(Path other);
+    /**
+     * Equals method
+     * 
+     * @param other Path to check equality against
+     * @return True, if this and other are equal to another
+     */
+    // public boolean equals(Path other);
 
     // #region static
     /**
      * List of all regexes with which to check, if given Strings match the path
      */
     static final Map<Path, String> regexes = new HashMap<>();
+
+    /**
+     * Placeholders for each path
+     */
     static final Map<Path, Map<Integer, PlaceHolder>> placeHolders = new HashMap<>();
 
     // #region s_matches
@@ -70,7 +80,20 @@ public interface Path {
     static void initialize(Path path) throws IllegalArgumentException {
         if (regexes.containsKey(path))
             return;
+        String regex = buildRegex(path, false, true);
+        regexes.put(path, regex);
+    }
 
+    /**
+     * Build regex for the path
+     * 
+     * @param path         Path to build the regex for.
+     * @param onlyGenerics If true, only generics will be used for the placeholders
+     *                     (".+"). Otherwise the correct datatype will be used.
+     * @return The built. regex
+     */
+    private static String buildRegex(Path path, boolean onlyGenerics, boolean addPlaceHolders)
+            throws IllegalArgumentException {
         String regex = "^";
         boolean initPlaceholder = false;
         String placeHolder = "";
@@ -95,18 +118,25 @@ public interface Path {
                 if (!initPlaceholder)
                     throw new IllegalArgumentException("Second place holder terminator found, invalid path");
 
-                regex += switch (path.getArguments().get(placeHolder)) {
-                    case "String" -> ".+";
-                    case "Integer" -> "\\d+";
-                    case "Long", "Float" -> "\\d+[,.]{1}\\d+";
-                    default -> throw new IllegalArgumentException("Missing placeholder definition");
-                };
+                if (!onlyGenerics) {
+                    regex += switch (path.getArguments().get(placeHolder)) {
+                        case "String" -> ".+";
+                        case "Integer" -> "\\d+";
+                        case "Long", "Float" -> "\\d+[,.]{1}\\d+";
+                        default -> throw new IllegalArgumentException("Missing placeholder definition");
+                    };
+                } else {
+                    regex += ".+";
+                }
 
-                if (!placeHolders.containsKey(path))
-                    placeHolders.put(path, new HashMap<>());
+                if (addPlaceHolders) {
+                    if (!placeHolders.containsKey(path))
+                        placeHolders.put(path, new HashMap<>());
 
-                placeHolders.get(path).put(currentGroup, new PlaceHolder(placeHolder,
-                        currentGroup, path.getArguments().get(placeHolder)));
+                    placeHolders.get(path).put(currentGroup, new PlaceHolder(placeHolder,
+                            currentGroup, path.getArguments().get(placeHolder)));
+                }
+
                 currentGroup++;
                 initPlaceholder = false;
                 placeHolder = "";
@@ -131,7 +161,7 @@ public interface Path {
         }
 
         regex += "$";
-        regexes.put(path, regex);
+        return regex;
     }
 
     public static Map<String, Object> getArguments(String resource, Path path) {
@@ -201,13 +231,16 @@ public interface Path {
             }
 
             @Override
-            public boolean equals(Path other) {
-                return other.getPath().equals(this.path);
+            public boolean equals(Object other) {
+                if (other instanceof Path x) {
+                    return Path.buildRegex(this, true, false).equals(Path.buildRegex(x, true, false));
+                }
+                return false;
             }
 
             @Override
             public int hashCode() {
-                return path.hashCode();
+                return Path.buildRegex(this, false, false).hashCode();
             }
         };
 

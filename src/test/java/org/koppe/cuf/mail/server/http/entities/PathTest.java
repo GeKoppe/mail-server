@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.koppe.cuf.mail.server.http.endpoints.GetMailEndpoint;
 
 public class PathTest {
 
@@ -52,5 +53,23 @@ public class PathTest {
 
         assertEquals("test", (String) sender);
         assertEquals(1, (Integer) id);
+    }
+
+    @Test
+    void testEquals() {
+        Path p1 = Path.of("/mails/{id}", Map.of("id", "Integer"));
+        Path p2 = Path.of("/mails/{identification}", Map.of("identification", "Integer"));
+        GetMailEndpoint ep = new GetMailEndpoint();
+
+        assertTrue(p1.equals(p2));
+        assertTrue(ep.getPath().equals(p2));
+    }
+
+    @Test
+    void testHashcode() {
+        Path p1 = Path.of("/mail/{id}/test", Map.of("id", "Integer"));
+        Path p2 = Path.of("/mail/{identification}/test", Map.of("identification", "Integer"));
+
+        assertEquals(p1.hashCode(), p2.hashCode());
     }
 }

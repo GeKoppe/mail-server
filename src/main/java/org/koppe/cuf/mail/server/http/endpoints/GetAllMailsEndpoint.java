@@ -44,8 +44,6 @@ public class GetAllMailsEndpoint implements Endpoint<Void, List<Mail>> {
      */
     @Getter
     private boolean authenticated = true;
-    @Getter
-    private boolean asList;
 
     @Override
     public Response<List<Mail>> handle(Request<Void> i) {

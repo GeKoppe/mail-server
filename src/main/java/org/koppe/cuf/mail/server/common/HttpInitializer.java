@@ -43,6 +43,7 @@ public abstract class HttpInitializer {
             logger.info("Endpoint {} successfully registered", e);
         }
         logger.info("Successfully initialized all announced endpoints");
+        endpoints.clear();
     }
 
     private static void searchEndpoints() throws StartupException {

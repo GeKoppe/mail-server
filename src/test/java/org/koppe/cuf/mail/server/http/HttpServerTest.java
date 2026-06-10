@@ -29,73 +29,70 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class HttpServerTest {
-    private static HttpServer server = new HttpServer(6666);
+    private static HttpServer server = new HttpServer(6666, false);
     private static Thread thread;
+    private static Endpoint<Void, Mail> ep = new Endpoint<Void, Mail>() {
+        @Getter
+        private final Method method = Method.GET;
+        @Getter
+        private final Path path = Path.of("/test-path", new HashMap<>());
+
+        @Override
+        public TypeReference<Void> getInputType() {
+            return new TypeReference<Void>() {
+            };
+        }
+
+        @Override
+        public TypeReference<Mail> getOutputType() {
+            return new TypeReference<Mail>() {
+            };
+        }
+
+        @Override
+        public org.koppe.cuf.mail.server.http.entities.Response<Mail> handle(
+                org.koppe.cuf.mail.server.http.entities.Request<Void> i) {
+            if (i.getQuery().get("only_body") != null && i.getQuery().get("only_body").equals("true")) {
+                return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
+                        ResponseBody.of("{\"body\": \"Testbody\"}", null, getOutputType(),
+                                MediaType.APPLICATION_JSON),
+                        getOutputType());
+            }
+            Mail mail = new Mail();
+            mail.setFrom("test@test.com");
+            mail.setBody("Testbody");
+            mail.setSubject("Test");
+            return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
+                    ResponseBody.of(mail, getOutputType(), MediaType.APPLICATION_JSON), getOutputType());
+        }
+
+        @Override
+        public boolean isAuthenticated() {
+            return false;
+        }
+    };
 
     @BeforeAll
     public static void setup() {
-        Endpoint<Void, Mail> ep = new Endpoint<Void, Mail>() {
-            @Getter
-            private final Method method = Method.GET;
-            @Getter
-            private final Path path = Path.of("/test-path", new HashMap<>());
-
-            @Override
-            public TypeReference<Void> getInputType() {
-                return new TypeReference<Void>() {
-
-                };
-            }
-
-            @Override
-            public TypeReference<Mail> getOutputType() {
-                return new TypeReference<Mail>() {
-
-                };
-            }
-
-            @Override
-            public org.koppe.cuf.mail.server.http.entities.Response<Mail> handle(
-                    org.koppe.cuf.mail.server.http.entities.Request<Void> i) {
-                if (i.getQuery().get("only_body") != null && i.getQuery().get("only_body").equals("true")) {
-                    return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
-                            ResponseBody.of("{\"body\": \"Testbody\"}", null, getOutputType(),
-                                    MediaType.APPLICATION_JSON),
-                            getOutputType());
-                }
-                Mail mail = new Mail();
-                mail.setFrom("test@test.com");
-                mail.setBody("Testbody");
-                mail.setSubject("Test");
-                return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
-                        ResponseBody.of(mail, getOutputType(), MediaType.APPLICATION_JSON), getOutputType());
-            }
-
-            @Override
-            public boolean isAuthenticated() {
-                return false;
-            }
-
-            @Override
-            public boolean isAsList() {
-                return false;
-            }
-        };
 
         HttpInitializer.announce(ep);
         try {
             HttpInitializer.initializeEndpoints();
         } catch (StartupException e) {
-            fail();
+            fail("Startup Exception: " + e.getMessage() + " caused by: " + e.getCause());
         }
         thread = Thread.ofVirtual().factory().newThread(server);
         thread.start();
     }
 
     @AfterAll
-    public static void shutdown() throws InterruptedException {
-        server.shutdown();
-        thread.join();
+    public static void shutdown() {
+        try {
+            server.shutdown();
+            thread.join();
+        } catch (Throwable ex) {
+
+        }
     }
 
     @Test
