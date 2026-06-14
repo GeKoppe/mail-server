@@ -59,6 +59,7 @@ dependencies {
 	testImplementation 'com.squareup.okio:okio:3.16.3'
 	testImplementation 'com.squareup.okhttp3:okhttp:5.3.2'
 	testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.1.0'
+	testImplementation "com.icegreen:greenmail:2.0.1"
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.36'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'

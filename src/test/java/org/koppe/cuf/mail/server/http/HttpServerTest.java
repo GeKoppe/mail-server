@@ -74,7 +74,6 @@ public class HttpServerTest {
 
     @BeforeAll
     public static void setup() {
-
         HttpInitializer.announce(ep);
         try {
             HttpInitializer.initializeEndpoints();

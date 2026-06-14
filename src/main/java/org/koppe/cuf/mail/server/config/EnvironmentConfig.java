@@ -37,4 +37,8 @@ public class EnvironmentConfig {
      */
     public static final String KEYSTORE_PASS = "KEYSTORE_PASS";
     public static final String ALLOW_PLAIN = "ALLOW_PLAIN";
+
+    // #region mail
+    public static final String MAX_MAIL_SIZE = "MAX_MAIL_SIZE";
+    public static final String DOMAINS = "DOMAINS";
 }

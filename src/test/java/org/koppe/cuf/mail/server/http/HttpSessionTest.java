@@ -1,5 +1,6 @@
 package org.koppe.cuf.mail.server.http;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
@@ -32,7 +33,14 @@ public class HttpSessionTest {
                 new FirstLine("/mail/1", Method.GET, "HTTP/1.1"), new GetMailEndpoint(),
                 new BufferedReader(new InputStreamReader(is)), new PrintWriter(os));
         session.run();
-        System.out.println(os.toString());
+
+        String result = os.toString();
+        is.close();
+        os.close();
+        socket.close();
+        assertTrue(result.contains("Server: Host"));
+        assertTrue(result.contains("HTTP/1.1 200 OK"));
+        assertTrue(result.contains("{"));
 
         InputStream is2 = new ByteArrayInputStream(input.getBytes());
         OutputStream os2 = new ByteArrayOutputStream();
@@ -42,6 +50,24 @@ public class HttpSessionTest {
                 new FirstLine("/login", Method.GET, "HTTP/1.1"), new LoginEndpoint(),
                 new BufferedReader(new InputStreamReader(is2)), new PrintWriter(os2));
         s2.run();
-        System.out.println(os2.toString());
+
+        String result2 = os2.toString();
+        is2.close();
+        os2.close();
+        socket2.close();
+
+        assertTrue(result2.contains("HTTP/1.1 200 OK"));
+    }
+
+    void testNotFound() {
+        String input = "Host: localhost\r\nUser-Agent: Teststream\r\nAccept: */*\r\n\r\n";
+        InputStream is = new ByteArrayInputStream(input.getBytes());
+        OutputStream os = new ByteArrayOutputStream();
+
+        Socket socket = mock(Socket.class);
+        HttpSession<Void, Mail> session = HttpSession.of(socket,
+                new FirstLine("/mail/1", Method.GET, "HTTP/1.1"), new GetMailEndpoint(),
+                new BufferedReader(new InputStreamReader(is)), new PrintWriter(os));
+        session.run();
     }
 }

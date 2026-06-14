@@ -17,11 +17,20 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.koppe.cuf.mail.server.common.ConfigInitializer;
 import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
 
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
+
+@ExtendWith(SystemStubsExtension.class)
 public class SmtpSessionTest {
+    @SystemStub
+    private EnvironmentVariables env = new EnvironmentVariables()
+            .set("DOMAINS", "test.com");
 
     @Test
     public void testSmtp() throws InterruptedException {
@@ -50,7 +59,7 @@ public class SmtpSessionTest {
                 String line = in.readLine();
                 sb.append(line);
                 if (!line.startsWith("250-"))
-                    break; // letzte 250-Zeile hat kein Bindestrich
+                    break;
             }
 
             out.println("STARTTLS");
