@@ -28,33 +28,33 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode
 public class User {
-    @Id
-    @Column(name = "user_id", nullable = false, unique = true)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+	@Id
+	@Column(name = "user_id", nullable = false, unique = true)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String name;
+	@Column(name = "username", nullable = false, unique = true)
+	private String name;
 
-    @Column(name = "user_mail", nullable = false, unique = true)
-    private String mail;
+	@Column(name = "user_mail", nullable = false, unique = true)
+	private String mail;
 
-    @Column(name = "password", nullable = false, unique = false)
-    private String pw;
+	@Column(name = "password", nullable = false, unique = false)
+	private String pw;
 
-    @Column(name = "created", nullable = false, unique = false)
-    private LocalDate created;
+	@Column(name = "created", nullable = false, unique = false)
+	private LocalDate created;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
-    @JoinTable(name = "user_mails", joinColumns = {
-            @JoinColumn(name = "user_id", nullable = false, unique = false)
-    }, inverseJoinColumns = {
-            @JoinColumn(name = "mail_id", nullable = false, unique = false)
-    }, indexes = {
-            @Index(columnList = "user_id")
-    })
-    private List<Mail> mails;
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+	@JoinTable(name = "user_mails", joinColumns = {
+			@JoinColumn(name = "user_id", nullable = false, unique = false)
+	}, inverseJoinColumns = {
+			@JoinColumn(name = "mail_id", nullable = false, unique = false)
+	}, indexes = {
+			@Index(columnList = "user_id")
+	})
+	private List<Mail> mails;
 
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Folder> folders;
+	@OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	private List<Folder> folders;
 }

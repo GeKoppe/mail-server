@@ -5,10 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.koppe.cuf.mail.server.common.Event;
 import org.koppe.cuf.mail.server.common.Interceptor;
 import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.Session;
+import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
+import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.mail.Command;
 import org.koppe.cuf.mail.server.common.mail.Mail;
 import org.koppe.cuf.mail.server.smtp.state.SmtpContext;
@@ -41,7 +46,11 @@ public class SmtpSession implements Session {
      * Smtp context
      */
     private final SmtpContext context = new SmtpContext();
+    /**
+     * State machine
+     */
     private final SmtpStateMachine machine = new SmtpStateMachine();
+    private final List<Server> subs = new ArrayList<>();
 
     // #region setup
     /**
@@ -70,6 +79,7 @@ public class SmtpSession implements Session {
         context.setHostname(hostname);
         context.setState(SmtpState.CONNECTED);
         context.setActive(true);
+        context.setSocket(socket);
 
         return true;
     }
@@ -92,6 +102,7 @@ public class SmtpSession implements Session {
             logger.error("Could not setup the required reader and writer for the socket");
             return;
         }
+        notifySubscribers(new StatusChangeEvent(this, StatusChange.START));
 
         machine.setContext(context);
         machine.setRequestHandler(new SmtpRequestHandler());
@@ -99,6 +110,7 @@ public class SmtpSession implements Session {
 
         if (context.getState().equals(SmtpState.DONE))
             saveMail();
+        notifySubscribers(new StatusChangeEvent(this, StatusChange.DONE));
     }
 
     // #region close
@@ -109,23 +121,44 @@ public class SmtpSession implements Session {
     public void close() {
         try {
             socket.close();
+            context.getReader().close();
+            context.getWriter().close();
         } catch (IOException e) {
             logger.warn("Could not close socket due to an io exception", e);
         }
         context.setActive(false);
     }
 
+    /**
+     * Returns true, if session is still active
+     */
     public boolean isActive() {
         return context.isActive();
     }
 
+    /**
+     * Adds an interceptor to the communication. Interceptor will intercept all
+     * outgoing communication.
+     * 
+     * @param interceptor Interceptor to add to the session
+     */
     public void addInterceptor(Interceptor<SmtpState, ? extends Command<SmtpState>> interceptor) {
-        machine.addInterceptor(interceptor);
+        synchronized (machine) {
+            machine.addInterceptor(interceptor);
+        }
+    }
+
+    private void notifySubscribers(Event<Session, StatusChange> event) {
+        synchronized (subs) {
+            subs.forEach(s -> s.notify(event));
+        }
     }
 
     @Override
     public void addSubscribedServer(Server server) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addSubscribedServer'");
+        logger.debug("Adding server {} to subscribers");
+        synchronized (subs) {
+            subs.add(server);
+        }
     }
 }

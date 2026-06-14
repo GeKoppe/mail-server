@@ -12,6 +12,7 @@ import org.koppe.cuf.mail.server.smtp.actions.NoopAction;
 import org.koppe.cuf.mail.server.smtp.actions.QuitAction;
 import org.koppe.cuf.mail.server.smtp.actions.RcptAction;
 import org.koppe.cuf.mail.server.smtp.actions.RsetAction;
+import org.koppe.cuf.mail.server.smtp.actions.StartTlsAction;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public enum SmtpCommand implements Command<SmtpState> {
      * Client EHLO to acknowledge connection.
      */
     EHLO("EHLO", new EhloAction()),
+    /**
+     * Start tls action
+     */
+    STARTTLS("STARTTLS", new StartTlsAction()),
     /**
      * HELO command by the client to acknowledge the connection and start tls
      * wrapping.

@@ -2,6 +2,7 @@ package org.koppe.cuf.mail.server.smtp.state;
 
 import java.io.BufferedReader;
 import java.io.Writer;
+import java.net.Socket;
 import java.util.Map;
 
 import org.koppe.cuf.mail.server.common.mail.Context;
@@ -22,6 +23,7 @@ public class SmtpContext implements Context<SmtpState, SmtpCommand> {
     private Map<String, String> arguments;
     private volatile boolean active;
     private volatile SmtpCommand clientCommand;
+    private Socket socket;
 
     @Override
     public void close() throws Exception {

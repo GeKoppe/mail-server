@@ -2,6 +2,7 @@ package org.koppe.cuf.mail.server.common.mail;
 
 import java.io.BufferedReader;
 import java.io.Writer;
+import java.net.Socket;
 import java.util.Map;
 
 /**
@@ -107,7 +108,29 @@ public interface Context<T extends State, C extends Command<T>> extends AutoClos
      */
     public void setActive(boolean active);
 
+    /**
+     * Get client command
+     * 
+     * @return cient command
+     */
     public C getClientCommand();
 
+    /**
+     * Set client command
+     * 
+     * @param command client command
+     */
     public void setClientCommand(C command);
+
+    /**
+     * Gets socket of the socket
+     * @return socket of the socket
+     */
+    public Socket getSocket();
+
+    /**
+     * Sets socket of the socket
+     * @param socket socket of the socket
+     */
+    public void setSocket(Socket socket);
 }

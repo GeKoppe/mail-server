@@ -10,6 +10,8 @@ import java.util.concurrent.ThreadFactory;
 
 import org.koppe.cuf.mail.server.common.Event;
 import org.koppe.cuf.mail.server.common.Server;
+import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
+import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.common.mail.SessionEntry;
 import org.slf4j.Logger;
@@ -146,10 +148,27 @@ public final class SmtpServer implements Server {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T, I> void notify(Event<T, I> event) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'notify'");
+        if (!(event.getCause() instanceof SmtpSession))
+            return;
+        if (event.getInformation() instanceof StatusChangeEvent x) {
+            if (x.getInformation() == StatusChange.DONE) {
+                SessionEntry toRemove = null;
+                synchronized (activeSessions) {
+                    for (var y : activeSessions) {
+                        if (y.session().equals(event.getCause())) {
+                            toRemove = y;
+                            break;
+                        }
+                    }
+                    activeSessions.remove(toRemove);
+                }
+            }
+        }
     }
 
 }

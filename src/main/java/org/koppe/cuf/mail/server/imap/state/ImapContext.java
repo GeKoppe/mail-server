@@ -2,6 +2,7 @@ package org.koppe.cuf.mail.server.imap.state;
 
 import java.io.BufferedReader;
 import java.io.Writer;
+import java.net.Socket;
 import java.util.Map;
 
 import org.koppe.cuf.mail.server.common.mail.Context;
@@ -47,6 +48,11 @@ public class ImapContext implements Context<ImapState, ImapCommand> {
      */
     @Setter
     private Map<String, String> arguments;
+    /**
+     * Socket of the connection
+     */
+    @Setter
+    private Socket socket;
     /**
      * Service for fetching mail information from the databse
      */
