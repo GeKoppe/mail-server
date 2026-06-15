@@ -31,10 +31,12 @@ public class ConfigInitializer {
      */
     private static final Logger logger = LoggerFactory.getLogger(ConfigInitializer.class);
 
+    // #region execute
     /**
      * Initializes all configurations
      * 
-     * @throws ConfigurationException
+     * @throws ConfigurationException If the given configuration parameters are
+     *                                invalid
      */
     public static final void execute() throws ConfigurationException {
         logger.info("Initializing all server configs");
@@ -79,6 +81,7 @@ public class ConfigInitializer {
         }
     }
 
+    // #region init security config
     /**
      * Initializes the security configuration for the server
      * 
@@ -111,6 +114,13 @@ public class ConfigInitializer {
         }
     }
 
+    // #region init mail config
+    /**
+     * Initializes mail configuration
+     * 
+     * @throws ConfigurationException If no domains for this system are configured
+     *                                or an invalid MAX_MAIL_SIZE is given
+     */
     private static final void initMailConfig() throws ConfigurationException {
         logger.info("Initialising mail config");
         try {

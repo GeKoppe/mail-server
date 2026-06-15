@@ -16,6 +16,7 @@ import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.mail.Command;
 import org.koppe.cuf.mail.server.common.mail.Mail;
+import org.koppe.cuf.mail.server.config.MailConfig;
 import org.koppe.cuf.mail.server.smtp.state.SmtpContext;
 import org.koppe.cuf.mail.server.smtp.state.SmtpRequestHandler;
 import org.koppe.cuf.mail.server.smtp.state.SmtpState;
@@ -108,9 +109,17 @@ public class SmtpSession implements Session {
         machine.setRequestHandler(new SmtpRequestHandler());
         machine.run();
 
-        if (context.getState().equals(SmtpState.DONE))
+        if (!context.getState().equals(SmtpState.DONE)) {
+            notifySubscribers(new StatusChangeEvent(this, StatusChange.DONE));
+            return;
+        }
+
+        if (context.getMail().getTo().stream().filter(s -> s != null && !s.isBlank() && s.contains("@"))
+                .map((s) -> s.substring(s.indexOf("@") + 1)).filter(s -> MailConfig.DOMAINS.contains(s)).toList()
+                .size() > 0)
             saveMail();
-        notifySubscribers(new StatusChangeEvent(this, StatusChange.DONE));
+        else
+            new SmtpSender(true).send(context.getMail());
     }
 
     // #region close

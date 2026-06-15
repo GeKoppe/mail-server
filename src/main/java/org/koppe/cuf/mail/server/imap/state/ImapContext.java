@@ -53,6 +53,8 @@ public class ImapContext implements Context<ImapState, ImapCommand> {
      */
     @Setter
     private Socket socket;
+    @Setter
+    private boolean authenticated;
     /**
      * Service for fetching mail information from the databse
      */

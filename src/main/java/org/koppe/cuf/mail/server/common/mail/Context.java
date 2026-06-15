@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.net.Socket;
 import java.util.Map;
 
+import org.koppe.cuf.mail.server.db.jpa.User;
+
 /**
  * Represents current protocol context, including current state, reader and
  * writer for in- and outputstream etc.
@@ -124,13 +126,19 @@ public interface Context<T extends State, C extends Command<T>> extends AutoClos
 
     /**
      * Gets socket of the socket
+     * 
      * @return socket of the socket
      */
     public Socket getSocket();
 
     /**
      * Sets socket of the socket
+     * 
      * @param socket socket of the socket
      */
     public void setSocket(Socket socket);
+
+    public User getUser();
+
+    public void setUser(User user);
 }

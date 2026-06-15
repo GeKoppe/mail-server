@@ -112,7 +112,8 @@ public class SmtpSender {
         allRecipients.addAll(mail.getTo());
         allRecipients.addAll(mail.getCc());
         allRecipients.addAll(mail.getBcc());
-        return allRecipients.stream().filter(s -> s.contains("@")).map(s -> s.substring(s.indexOf("@") + 1))
+        return allRecipients.stream().filter(s -> s != null && s.contains("@"))
+                .map(s -> s.substring(s.indexOf("@") + 1))
                 .collect(Collectors.toSet()).stream().toList();
     }
 

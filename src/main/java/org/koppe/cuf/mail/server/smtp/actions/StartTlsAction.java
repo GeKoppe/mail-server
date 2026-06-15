@@ -26,7 +26,7 @@ public class StartTlsAction implements CommandAction<SmtpState, SmtpContext> {
     @Override
     public void apply(SmtpContext c) {
         WritingUtils.write(c.getWriter(), "220 Ready to start TLS");
-        Socket socket = TLSWrapper.wrapTls(c.getSocket());
+        Socket socket = TLSWrapper.wrapTls(c.getSocket(), true);
         if (socket == null) {
             logger.info("Could not wrap socket in tls");
             c.setState(SmtpState.CONNECTION_ERROR);

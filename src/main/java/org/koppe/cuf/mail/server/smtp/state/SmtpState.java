@@ -26,7 +26,7 @@ public enum SmtpState implements State {
      * EHLO or HELO sent by client
      */
     EHLO(2, List.of(SmtpCommand.MAIL, SmtpCommand.STARTTLS, SmtpCommand.QUIT, SmtpCommand.RSET, SmtpCommand.NOOP,
-            SmtpCommand.EHLO, SmtpCommand.HELO)),
+            SmtpCommand.EHLO, SmtpCommand.HELO, SmtpCommand.AUTH)),
     /**
      * Mail from has been set
      */

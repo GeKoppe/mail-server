@@ -13,11 +13,6 @@ public class MailAction implements CommandAction<SmtpState, SmtpContext> {
     @Override
     public void apply(SmtpContext c) {
         logger.debug("Received mail command, adding sender");
-        if (c.getMail() == null) {
-            logger.warn("No mail object given in command arguments");
-            c.setState(SmtpState.CONNECTION_ERROR);
-        }
-
         String from = c.getArguments().get("args");
         c.getMail().setFrom(from.substring(from.indexOf("<") + 1, from.indexOf(">")));
         WritingUtils.write(c.getWriter(), "250 OK");

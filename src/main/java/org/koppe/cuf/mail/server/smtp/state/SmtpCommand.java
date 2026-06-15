@@ -2,6 +2,7 @@ package org.koppe.cuf.mail.server.smtp.state;
 
 import org.koppe.cuf.mail.server.common.mail.Command;
 import org.koppe.cuf.mail.server.common.mail.CommandAction;
+import org.koppe.cuf.mail.server.smtp.actions.AuthAction;
 import org.koppe.cuf.mail.server.smtp.actions.ConnectedAction;
 import org.koppe.cuf.mail.server.smtp.actions.DataAction;
 import org.koppe.cuf.mail.server.smtp.actions.EhloAction;
@@ -67,7 +68,11 @@ public enum SmtpCommand implements Command<SmtpState> {
     /**
      * Client error
      */
-    ERROR("ERROR", new ErrorAction());
+    ERROR("ERROR", new ErrorAction()),
+    /**
+     * Auth action
+     */
+    AUTH("AUTH", new AuthAction());
 
     /**
      * String representation of the command

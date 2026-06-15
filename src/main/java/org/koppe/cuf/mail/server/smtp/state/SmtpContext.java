@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.koppe.cuf.mail.server.common.mail.Context;
 import org.koppe.cuf.mail.server.common.mail.Mail;
+import org.koppe.cuf.mail.server.db.jpa.User;
 
 import lombok.Data;
 
@@ -24,6 +25,7 @@ public class SmtpContext implements Context<SmtpState, SmtpCommand> {
     private volatile boolean active;
     private volatile SmtpCommand clientCommand;
     private Socket socket;
+    private User user;
 
     @Override
     public void close() throws Exception {

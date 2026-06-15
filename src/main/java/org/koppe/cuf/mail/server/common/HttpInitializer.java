@@ -13,6 +13,9 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Initializes all http endpoints in the static http server field
+ */
 public abstract class HttpInitializer {
     /**
      * Logger
@@ -46,6 +49,14 @@ public abstract class HttpInitializer {
         endpoints.clear();
     }
 
+    /**
+     * Searches for all classes implementing the
+     * {@link org.koppe.cuf.mail.server.http.entities.Endpoint} interface and
+     * beloging to the {@link org.koppe.cuf.mail.server.http.endpoints} package.
+     * Adds those classes to the private list for endpoints to initialize.
+     * 
+     * @throws StartupException If an Endpoint could not be instantiated
+     */
     private static void searchEndpoints() throws StartupException {
         logger.debug("Searching for all endpoints");
         Reflections r = new Reflections("org.koppe.cuf.mail.server.http.endpoints");

@@ -24,13 +24,13 @@ public class TLSWrapper {
      * @param socket Socket to wrap
      * @return The wrapped socket or null, if socket could not be wrapped
      */
-    public static Socket wrapTls(Socket socket) {
+    public static Socket wrapTls(Socket socket, boolean clientMode) {
         logger.debug("Wrapping socket {} in tls");
         try {
             SSLSocket tls = (SSLSocket) TLSContext.getInstance().getSocketFactory().createSocket(socket,
                     socket.getInputStream(),
                     true);
-            tls.setUseClientMode(false);
+            tls.setUseClientMode(clientMode);
             tls.startHandshake();
             logger.debug("Socket wrapped and handshake executed");
             return tls;
