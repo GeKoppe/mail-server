@@ -115,11 +115,11 @@ public class SmtpSession implements Session {
         }
 
         if (context.getMail().getTo().stream().filter(s -> s != null && !s.isBlank() && s.contains("@"))
-                .map((s) -> s.substring(s.indexOf("@") + 1)).filter(s -> MailConfig.DOMAINS.contains(s)).toList()
-                .size() > 0)
-            saveMail();
-        else
+                .map(s -> s.substring(s.indexOf("@") + 1)).filter(s -> MailConfig.DOMAINS.contains(s)).toList()
+                .size() == 0 && context.getUser() != null)
             new SmtpSender(true).send(context.getMail());
+        else
+            saveMail();
     }
 
     // #region close
