@@ -1,13 +1,10 @@
 package org.koppe.cuf.mail.server.smtp.actions;
 
-import java.util.List;
-
 import org.koppe.cuf.mail.server.common.PwHash;
 import org.koppe.cuf.mail.server.common.mail.CommandAction;
 import org.koppe.cuf.mail.server.common.mail.WritingUtils;
 import org.koppe.cuf.mail.server.db.jpa.User;
-import org.koppe.cuf.mail.server.db.jpa.User_;
-import org.koppe.cuf.mail.server.db.repository.JpaRepository;
+import org.koppe.cuf.mail.server.db.repository.UserRepository;
 import org.koppe.cuf.mail.server.smtp.state.SmtpContext;
 import org.koppe.cuf.mail.server.smtp.state.SmtpState;
 import org.slf4j.Logger;
@@ -24,7 +21,7 @@ public class AuthAction implements CommandAction<SmtpState, SmtpContext> {
     /**
      * Jpa repository for checking the database
      */
-    private final JpaRepository<User, Integer> users = new JpaRepository<>(User.class);
+    private final UserRepository users = new UserRepository();
 
     /**
      * {@inheritDoc}
@@ -54,8 +51,8 @@ public class AuthAction implements CommandAction<SmtpState, SmtpContext> {
         String user = args[0];
         String pw = args[1];
 
-        List<User> found = users.findBy(User_.name, user);
-        if (found.size() < 1 || !PwHash.matches(pw, found.get(0).getPw())) {
+        User found = users.findByName(user);
+        if (found == null || !PwHash.matches(pw, found.getPw())) {
             logger.error("Invalid credentials given");
             WritingUtils.write(c.getWriter(), "535 FAILURE user or password missing");
             c.setState(SmtpState.CLIENT_ERROR);
@@ -65,7 +62,7 @@ public class AuthAction implements CommandAction<SmtpState, SmtpContext> {
         logger.debug("Session authenticated");
         WritingUtils.write(c.getWriter(), "235 OK");
 
-        c.setUser(found.get(0));
+        c.setUser(found);
         return;
     }
 
