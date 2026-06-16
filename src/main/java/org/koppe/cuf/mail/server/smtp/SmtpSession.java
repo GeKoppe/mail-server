@@ -51,6 +51,9 @@ public class SmtpSession implements Session {
      * State machine
      */
     private final SmtpStateMachine machine = new SmtpStateMachine();
+    /**
+     * List of all subscribed server
+     */
     private final List<Server> subs = new ArrayList<>();
 
     // #region setup
@@ -99,15 +102,20 @@ public class SmtpSession implements Session {
      */
     @Override
     public void run() {
+        logger.debug("Starting session for http connection");
         if (!setup()) {
             logger.error("Could not setup the required reader and writer for the socket");
             return;
         }
         notifySubscribers(new StatusChangeEvent(this, StatusChange.START));
 
+        logger.debug("Setting up state machine");
         machine.setContext(context);
         machine.setRequestHandler(new SmtpRequestHandler());
+
+        logger.debug("Starting state machine");
         machine.run();
+        logger.debug("State machine done processing");
 
         if (!context.getState().equals(SmtpState.DONE)) {
             notifySubscribers(new StatusChangeEvent(this, StatusChange.DONE));
@@ -115,11 +123,15 @@ public class SmtpSession implements Session {
         }
 
         if (context.getMail().getTo().stream().filter(s -> s != null && !s.isBlank() && s.contains("@"))
-                .map(s -> s.substring(s.indexOf("@") + 1)).filter(s -> MailConfig.DOMAINS.contains(s)).toList()
-                .size() == 0 && context.getUser() != null)
+                .map(s -> s.substring(s.indexOf("@") + 1).toUpperCase())
+                .filter(s -> MailConfig.DOMAINS.stream().map(x -> x.toUpperCase()).toList().contains(s)).toList()
+                .size() == 0 && context.getUser() != null) {
+            logger.debug("Relaying message");
             new SmtpSender(true).send(context.getMail());
-        else
+        } else {
+            logger.debug("Saving message");
             saveMail();
+        }
     }
 
     // #region close

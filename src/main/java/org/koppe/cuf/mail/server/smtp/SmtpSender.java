@@ -40,7 +40,13 @@ public class SmtpSender {
      * Logger
      */
     private final Logger logger = LoggerFactory.getLogger(SmtpSender.class);
+    /**
+     * Only actually sends mail, if this is set to true
+     */
     private final boolean isProd;
+    /**
+     * List of unreachable hosts
+     */
     private final List<String> unreachableHosts = new ArrayList<>();
 
     // #region send
@@ -64,6 +70,7 @@ public class SmtpSender {
         sendMail(mail, mxRecords);
     }
 
+    // #region modify dev
     /**
      * Modifies the mail object for development purposes and returns an mxrecord
      * pointing to localhost.
@@ -80,6 +87,7 @@ public class SmtpSender {
         return new MXRecord(0, "localhost");
     }
 
+    // #region get mx records
     /**
      * Retrieves all required mx records
      * 
@@ -101,6 +109,7 @@ public class SmtpSender {
         return domainsToAddress.stream().filter(s -> s != null).toList();
     }
 
+    // #region extract domains
     /**
      * Extracts domains from all recipients in the mail.
      * 
@@ -117,6 +126,7 @@ public class SmtpSender {
                 .collect(Collectors.toSet()).stream().toList();
     }
 
+    // #region get record for domain
     /**
      * First tries to look up the
      * {@link org.koppe.cuf.mail.server.smtp.entities.DNSCache} for
@@ -138,6 +148,7 @@ public class SmtpSender {
         return rec;
     }
 
+    // #region lookup
     /**
      * Executes dns lookup for the given domain and returns the mx record with
      * highest priority related to it.
@@ -169,6 +180,13 @@ public class SmtpSender {
         }
     }
 
+    // #region send mail
+    /**
+     * Iterates through all mails and sends them
+     * 
+     * @param mail    Mail to send
+     * @param records List of mx records to send the mail to
+     */
     private void sendMail(Mail mail, List<MXRecord> records) {
         logger.info("Starting to send mail");
         for (var r : records) {
@@ -176,6 +194,13 @@ public class SmtpSender {
         }
     }
 
+    // #region send
+    /**
+     * Sends the mail to given mx record
+     * 
+     * @param mail Mail to send
+     * @param mx   MX record to receive the mail
+     */
     private void send(Mail mail, MXRecord mx) {
         try (Socket socket = new Socket(mx.host(), isProd ? 25 : 3000)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -207,7 +232,17 @@ public class SmtpSender {
         return;
     }
 
+    // #region send smtp
+    /**
+     * Executes the smtp sending
+     * 
+     * @param mail   Mail to send
+     * @param reader Reader for the socket
+     * @param writer Writer for the socket
+     * @return True, if mail could be sent
+     */
     private boolean sendSmtp(Mail mail, BufferedReader reader, PrintWriter writer) {
+        logger.debug("Executing smtp sending");
         WritingUtils.write(writer, "MAIL FROM:<" + mail.getFrom() + ">");
         for (var x : mail.getTo()) {
             WritingUtils.write(writer, "RCPT TO:<" + x + ">");
@@ -266,14 +301,17 @@ public class SmtpSender {
             logger.warn("Could not determine local host name");
             hostname = "client.local";
         }
+        logger.debug("Sending clieht EHLO");
         WritingUtils.write(writer, "EHLO " + hostname);
 
         String line = null;
         boolean startTls = false;
         try {
             while ((line = reader.readLine()) != null) {
-                if (line.contains("STARTTLS"))
+                if (line.contains("STARTTLS")) {
+                    logger.debug("Server supports starttls");
                     startTls = true;
+                }
                 if (!line.startsWith("250-"))
                     break;
             }
@@ -286,18 +324,18 @@ public class SmtpSender {
             logger.info("Server expects start tls, start wrapping");
             try {
                 socket = wrapSocket(socket);
+                logger.debug("Wrapped socket successfully");
             } catch (IOException e) {
                 logger.warn("Could not wrap socket in tls due to exception", e);
                 return false;
             }
-        }
-
-        try {
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            writer = new PrintWriter(socket.getOutputStream());
-        } catch (IOException e) {
-            logger.warn("Could not initialise reader and writer for new socket");
-            return false;
+            try {
+                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                writer = new PrintWriter(socket.getOutputStream());
+            } catch (IOException e) {
+                logger.warn("Could not initialise reader and writer for new socket");
+                return false;
+            }
         }
 
         WritingUtils.write(writer, "EHLO " + hostname);

@@ -21,6 +21,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Server for handling smtp connections
+ */
 @RequiredArgsConstructor
 public final class SmtpServer implements Server {
     /**
@@ -37,6 +40,9 @@ public final class SmtpServer implements Server {
     @Getter
     @Setter
     private volatile boolean running = true;
+    /**
+     * Hostname of the server
+     */
     private final String hostname;
     /**
      * List of active sessions

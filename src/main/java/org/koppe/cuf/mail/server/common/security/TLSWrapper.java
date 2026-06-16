@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.slf4j.Logger;
@@ -27,9 +28,11 @@ public class TLSWrapper {
     public static Socket wrapTls(Socket socket, boolean clientMode) {
         logger.debug("Wrapping socket {} in tls");
         try {
-            SSLSocket tls = (SSLSocket) TLSContext.getInstance().getSocketFactory().createSocket(socket,
-                    socket.getInputStream(),
-                    true);
+            SSLSocket tls = (SSLSocket) ((SSLSocketFactory) (clientMode ? SSLSocketFactory.getDefault()
+                    : TLSContext.getInstance().getSocketFactory()))
+                    .createSocket(socket,
+                            socket.getInputStream(),
+                            true);
             tls.setUseClientMode(clientMode);
             tls.startHandshake();
             logger.debug("Socket wrapped and handshake executed");
