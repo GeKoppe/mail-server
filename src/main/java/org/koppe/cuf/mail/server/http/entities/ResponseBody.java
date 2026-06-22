@@ -4,9 +4,22 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
 
+/**
+ * Implemented by all response bodies
+ */
 public interface ResponseBody<T> extends Body {
+    /**
+     * Returns the object the response body is holding
+     * 
+     * @return Object the response body is holding
+     */
     public T getObject();
 
+    /**
+     * Returns the media type of the response body
+     * 
+     * @return Media type of the response body
+     */
     public MediaType getMediaType();
 
     /**
@@ -42,6 +55,16 @@ public interface ResponseBody<T> extends Body {
         };
     }
 
+    /**
+     * Creates a response body
+     * 
+     * @param <T> Type of the object the response body represents
+     * @param s   String representation of the body
+     * @param o   Object the response body represents
+     * @param c   Type of the response body
+     * @param m   Media type of the response body
+     * @return Created response body
+     */
     public static <T> ResponseBody<T> of(String s, T o, TypeReference<T> c, MediaType m) {
         return new ResponseBody<T>() {
             @Getter

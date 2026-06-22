@@ -57,6 +57,6 @@ public class GetAllMailsEndpoint implements Endpoint<Void, List<Mail>> {
         m2.setSubject("Goodbye world");
         m2.setBody("Boooooody");
         return Response.of(200, "Ok", ResponseBody.of(List.of(m1, m2), outputType, MediaType.APPLICATION_JSON),
-                outputType);
+                outputType, new HashMap<>());
     }
 }

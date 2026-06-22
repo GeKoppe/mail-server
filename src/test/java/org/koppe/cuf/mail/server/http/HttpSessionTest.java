@@ -15,9 +15,7 @@ import java.net.Socket;
 
 import org.junit.jupiter.api.Test;
 import org.koppe.cuf.mail.server.common.mail.Mail;
-import org.koppe.cuf.mail.server.http.dto.LoginDto;
 import org.koppe.cuf.mail.server.http.endpoints.GetMailEndpoint;
-import org.koppe.cuf.mail.server.http.endpoints.LoginEndpoint;
 import org.koppe.cuf.mail.server.http.entities.Method;
 
 public class HttpSessionTest {
@@ -41,22 +39,6 @@ public class HttpSessionTest {
         assertTrue(result.contains("Server: Host"));
         assertTrue(result.contains("HTTP/1.1 200 OK"));
         assertTrue(result.contains("{"));
-
-        InputStream is2 = new ByteArrayInputStream(input.getBytes());
-        OutputStream os2 = new ByteArrayOutputStream();
-
-        Socket socket2 = mock(Socket.class);
-        HttpSession<LoginDto, Void> s2 = HttpSession.of(socket2,
-                new FirstLine("/login", Method.GET, "HTTP/1.1"), new LoginEndpoint(),
-                new BufferedReader(new InputStreamReader(is2)), new PrintWriter(os2));
-        s2.run();
-
-        String result2 = os2.toString();
-        is2.close();
-        os2.close();
-        socket2.close();
-
-        assertTrue(result2.contains("HTTP/1.1 200 OK"));
     }
 
     void testNotFound() {

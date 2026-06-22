@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.db.jpa.User_;
-import org.koppe.cuf.mail.server.db.repository.JpaRepository;
+import org.koppe.cuf.mail.server.db.repository.UserRepository;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +15,7 @@ public class UserService {
      * Repository for interacting with the database
      */
     @Setter
-    private JpaRepository<User, Integer> repo = new JpaRepository<>(User.class);
+    private UserRepository repo = new UserRepository();
 
     // #region find by id
     /**
@@ -24,7 +24,7 @@ public class UserService {
      * @param id Id of the user to find
      * @return The user or null, if no such user could be found
      */
-    public @Nullable User findById(int id) {
+    public @Nullable User findById(long id) {
         return repo.findById(id).orElse(null);
     }
 
@@ -58,7 +58,7 @@ public class UserService {
      * 
      * @param id Id of the user to be deleted
      */
-    public void deleteById(int id) {
+    public void deleteById(long id) {
         repo.deleteById(id);
     }
 
@@ -68,5 +68,9 @@ public class UserService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public boolean existsByName(String username) {
+        return !repo.findBy(User_.name, username).isEmpty();
     }
 }
