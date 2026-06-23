@@ -4,10 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.time.LocalDate;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.junit.jupiter.api.Test;
+import org.koppe.cuf.mail.server.common.PwHash;
 import org.koppe.cuf.mail.server.db.jpa.Folder;
 import org.koppe.cuf.mail.server.db.jpa.Mail;
 import org.koppe.cuf.mail.server.db.jpa.MailMetadata;
@@ -62,7 +65,7 @@ public class JwtUtilsTest {
         assertEquals(username, JwtUtils.getUser(jwt));
     }
 
-    // @Test
+    @Test
     void testValidate() {
         Configuration cfg = new Configuration()
                 .addAnnotatedClass(User.class)
@@ -81,19 +84,26 @@ public class JwtUtilsTest {
         SessionFactory fact = cfg.buildSessionFactory();
         try (Session s = fact.openSession()) {
             s.createQuery("FROM User", User.class).getResultList();
+            s.createQuery("FROM Folder", Folder.class).getResultList();
+            s.createQuery("FROM Mail", Mail.class).getResultList();
+            s.createQuery("FROM MailMetadata", MailMetadata.class).getResultList();
         }
+
         UserRepository repo = new UserRepository();
         repo.setFactory(fact);
         UserService us = new UserService();
         us.setRepo(repo);
 
         User user = new User();
-        user.setId(1);
         user.setName("Test");
+        user.setMail("test");
+        user.setPw(PwHash.hash("test"));
+        user.setCreated(LocalDate.now());
 
-        us.save(user);
+        us.create(user);
         String jwt = JwtUtils.generateToken(user.getName());
 
         assertTrue(JwtUtils.validate(jwt, us));
+        fact.close();
     }
 }

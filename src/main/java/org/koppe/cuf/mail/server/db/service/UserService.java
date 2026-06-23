@@ -62,12 +62,33 @@ public class UserService {
         repo.deleteById(id);
     }
 
-    public User save(User u) {
+    public User create(User u) {
         try {
             return repo.save(u);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public User update(User u) throws IllegalArgumentException {
+        if (u == null || u.getId() == null) {
+            throw new IllegalArgumentException("No user id given");
+        }
+        User existing = findById(u.getId());
+        if (existing == null) {
+            return null;
+        }
+
+        existing.setMail(u.getMail());
+        existing.setName(u.getName());
+        existing.setPw(u.getPw());
+
+        try {
+            repo.save(existing);
+        } catch (Exception e) {
+            return null;
+        }
+        return existing;
     }
 
     public boolean existsByName(String username) {

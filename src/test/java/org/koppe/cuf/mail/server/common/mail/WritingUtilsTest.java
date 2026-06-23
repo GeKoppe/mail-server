@@ -15,7 +15,6 @@ public class WritingUtilsTest {
     void testWrite() {
         try (OutputStream os = new ByteArrayOutputStream();
                 PrintWriter w = new PrintWriter(os)) {
-
             WritingUtils.write(w, "Hello World");
             assertEquals("Hello World\r\n", os.toString());
         } catch (IOException e) {

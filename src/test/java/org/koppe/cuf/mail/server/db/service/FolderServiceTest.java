@@ -59,7 +59,7 @@ public class FolderServiceTest {
         u.setName("test");
         u.setPw("test");
 
-        User saved = us.save(u);
+        User saved = us.create(u);
 
         Folder folder = new Folder();
         folder.setName("Test");
