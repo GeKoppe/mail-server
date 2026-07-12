@@ -32,8 +32,8 @@ repositories {
 		name = "github"
 		url = 'https://maven.pkg.github.com/GeKoppe/java-expansion'
 		credentials {
-			username = findProperty('gpr.user') ?: ''
-			password = findProperty('gpr.key') ?: ''
+			username = findProperty('gpr.user') ?: System.getenv('GH_USER') ?: ''
+			password = findProperty('gpr.key') ?: System.getenv('GH_KEY') ?: ''
 		}
 	}
 }
