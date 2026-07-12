@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: Pipeline
     
     steps:
     - name: Checkout code
