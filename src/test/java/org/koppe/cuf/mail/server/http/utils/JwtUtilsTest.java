@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.koppe.cuf.mail.server.common.PwHash;
 import org.koppe.cuf.mail.server.common.exceptions.AuthenticationException;
@@ -20,54 +22,11 @@ import org.koppe.cuf.mail.server.db.repository.UserRepository;
 import org.koppe.cuf.mail.server.db.service.UserService;
 
 public class JwtUtilsTest {
-    @Test
-    void testGenerateRefreshToken() throws AuthenticationException {
-        String username = "test";
-        String refresh = JwtUtils.generateRefreshToken(username);
 
-        String jwt;
-        try {
-            jwt = JwtUtils.refresh(refresh);
-        } catch (TokenException e) {
-            fail(e.getMessage());
-            return;
-        }
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
+    private static SessionFactory fact;
 
-    @Test
-    void testGenerateToken() throws AuthenticationException {
-        String username = "test";
-        String jwt = JwtUtils.generateToken(username);
-
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
-
-    @Test
-    void testGetUser() throws AuthenticationException {
-        String username = "test";
-        String jwt = JwtUtils.generateToken(username);
-
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
-
-    @Test
-    void testRefresh() throws AuthenticationException {
-        String username = "test";
-        String refresh = JwtUtils.generateRefreshToken(username);
-
-        String jwt;
-        try {
-            jwt = JwtUtils.refresh(refresh);
-        } catch (TokenException e) {
-            fail(e.getMessage());
-            return;
-        }
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
-
-    @Test
-    void testValidate() throws AuthenticationException {
+    @BeforeAll
+    public static void setup() {
         Configuration cfg = new Configuration()
                 .addAnnotatedClass(User.class)
                 .addAnnotatedClass(Folder.class)
@@ -82,7 +41,7 @@ public class JwtUtilsTest {
                 .setProperty("hibernate.hbm2ddl.auto", "create")
                 .setProperty("hibernate.show_sql", "true");
 
-        SessionFactory fact = cfg.buildSessionFactory();
+        fact = cfg.buildSessionFactory();
         try (Session s = fact.openSession()) {
             s.createQuery("FROM User", User.class).getResultList();
             s.createQuery("FROM Folder", Folder.class).getResultList();
@@ -104,9 +63,63 @@ public class JwtUtilsTest {
         user.setCreated(LocalDate.now());
 
         us.create(user);
-        String jwt = JwtUtils.generateToken(user.getName());
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        fact.close();
+    }
+
+    @Test
+    void testGenerateRefreshToken() throws AuthenticationException {
+        String username = "Test";
+        String refresh = JwtUtils.generateRefreshToken(username);
+
+        String jwt;
+        try {
+            jwt = JwtUtils.refresh(refresh);
+        } catch (TokenException e) {
+            fail(e.getMessage());
+            return;
+        }
+        assertEquals(username, JwtUtils.getUser(jwt));
+    }
+
+    @Test
+    void testGenerateToken() throws AuthenticationException {
+        String username = "Test";
+        String jwt = JwtUtils.generateToken(username);
+
+        assertEquals(username, JwtUtils.getUser(jwt));
+    }
+
+    @Test
+    void testGetUser() throws AuthenticationException {
+        String username = "Test";
+        String jwt = JwtUtils.generateToken(username);
+
+        assertEquals(username, JwtUtils.getUser(jwt));
+    }
+
+    @Test
+    void testRefresh() throws AuthenticationException {
+        String username = "Test";
+        String refresh = JwtUtils.generateRefreshToken(username);
+
+        String jwt;
+        try {
+            jwt = JwtUtils.refresh(refresh);
+        } catch (TokenException e) {
+            fail(e.getMessage());
+            return;
+        }
+        assertEquals(username, JwtUtils.getUser(jwt));
+    }
+
+    @Test
+    void testValidate() throws AuthenticationException {
+        String jwt = JwtUtils.generateToken("Test");
 
         assertTrue(JwtUtils.validate(jwt));
-        fact.close();
     }
 }
