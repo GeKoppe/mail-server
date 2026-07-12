@@ -1,10 +1,12 @@
-package org.koppe.cuf.mail.server.http.utils;
+package org.koppe.cuf.mail.server.http.entities;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -18,56 +20,33 @@ import org.koppe.cuf.mail.server.db.jpa.MailMetadata;
 import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.db.repository.UserRepository;
 import org.koppe.cuf.mail.server.db.service.UserService;
+import org.koppe.cuf.mail.server.http.utils.JwtUtils;
 
-public class JwtUtilsTest {
+import com.fasterxml.jackson.core.type.TypeReference;
+
+public class JwtAuthenticatorTest {
     @Test
-    void testGenerateRefreshToken() throws AuthenticationException {
-        String username = "test";
-        String refresh = JwtUtils.generateRefreshToken(username);
+    void testAuthenticate() throws AuthenticationException {
+        JwtAuthenticator auth = new JwtAuthenticator();
+        assertNull(auth.authenticate(null));
+        assertNull(auth.authenticate("Test"));
 
-        String jwt;
-        try {
-            jwt = JwtUtils.refresh(refresh);
-        } catch (TokenException e) {
-            fail(e.getMessage());
-            return;
-        }
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
+        Request<String> request = Request.empty(new TypeReference<String>() {
 
-    @Test
-    void testGenerateToken() throws AuthenticationException {
-        String username = "test";
-        String jwt = JwtUtils.generateToken(username);
+        });
 
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
+        assertNull(auth.authenticate(request));
 
-    @Test
-    void testGetUser() throws AuthenticationException {
-        String username = "test";
-        String jwt = JwtUtils.generateToken(username);
+        Map<String, String> headers = new HashMap<>();
+        request.setHeaders(headers);
+        assertNull(auth.authenticate(request));
 
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
+        headers.put("Authorization", "");
+        assertNull(auth.authenticate(request));
 
-    @Test
-    void testRefresh() throws AuthenticationException {
-        String username = "test";
-        String refresh = JwtUtils.generateRefreshToken(username);
+        headers.put("Authorization", "test");
+        assertNull(auth.authenticate(request));
 
-        String jwt;
-        try {
-            jwt = JwtUtils.refresh(refresh);
-        } catch (TokenException e) {
-            fail(e.getMessage());
-            return;
-        }
-        assertEquals(username, JwtUtils.getUser(jwt));
-    }
-
-    @Test
-    void testValidate() throws AuthenticationException {
         Configuration cfg = new Configuration()
                 .addAnnotatedClass(User.class)
                 .addAnnotatedClass(Folder.class)
@@ -104,9 +83,17 @@ public class JwtUtilsTest {
         user.setCreated(LocalDate.now());
 
         us.create(user);
-        String jwt = JwtUtils.generateToken(user.getName());
 
-        assertTrue(JwtUtils.validate(jwt));
+        String token = JwtUtils.generateToken(user.getName());
+        headers.put("Authorization", token);
+
+        User u = auth.authenticate(request);
+        assertNotNull(u);
+
+        assertEquals(user.getMail(), u.getMail());
+        assertEquals(user.getId(), u.getId());
+        assertEquals(user.getName(), u.getName());
+
         fact.close();
     }
 }

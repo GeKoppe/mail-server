@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.koppe.cuf.mail.server.common.PwHash;
+import org.koppe.cuf.mail.server.common.exceptions.AuthenticationException;
 import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.db.service.UserService;
 import org.koppe.cuf.mail.server.http.dto.LoginDto;
@@ -91,9 +92,15 @@ public class LoginEndpoint implements Endpoint<LoginDto, SessionDto> {
             return Response.unauthorized();
         }
 
-        SessionDto dto = new SessionDto(JwtUtils.generateToken(user.getName()),
-                JwtUtils.generateRefreshToken(user.getName()));
-        
+        SessionDto dto = null;
+        try {
+            dto = new SessionDto(JwtUtils.generateToken(user.getName()),
+                    JwtUtils.generateRefreshToken(user.getName()));
+        } catch (AuthenticationException e) {
+            logger.warn("Invalid username");
+            return Response.unauthorized();
+        }
+
         logger.debug("Authorised user {}", user.getName());
 
         return Response.ok(dto, getOutputType(), MediaType.APPLICATION_JSON);

@@ -1,10 +1,13 @@
 package org.koppe.cuf.mail.server.http.utils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
+import org.koppe.cuf.mail.server.common.exceptions.AuthenticationException;
+import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.db.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import lombok.Setter;
 
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
@@ -32,8 +36,24 @@ public class JwtUtils {
      * Expiration of tokens (60 minutes)
      */
     private static final long EXPIRATION_TIME = 3600000L;
+    /**
+     * Userservice
+     */
+    @Setter
+    private static UserService srv = new UserService();
 
-    public static final String generateToken(String userName) {
+    /**
+     * Generates a jwt based authentication token.
+     * 
+     * @param userName Username for which to generate the authentication token.
+     * @return The generated auth token
+     * @throws AuthenticationException If the given username does not exist in the
+     *                                 system
+     */
+    public static final String generateToken(String userName) throws AuthenticationException {
+        if (!srv.existsByName(userName)) {
+            throw new AuthenticationException("Username " + userName + " does not exist in the system");
+        }
         return Jwts.builder()
                 .subject(userName)
                 .issuer(ISSUER)
@@ -44,7 +64,16 @@ public class JwtUtils {
                 .compact();
     }
 
-    public static String generateRefreshToken(String userName) {
+    /**
+     * 
+     * @param userName
+     * @return
+     * @throws AuthenticationException
+     */
+    public static String generateRefreshToken(String userName) throws AuthenticationException {
+        if (!srv.existsByName(userName)) {
+            throw new AuthenticationException("Username " + userName + " does not exist in the system");
+        }
         return Jwts.builder()
                 .subject(userName)
                 .issuer(ISSUER)
@@ -55,7 +84,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    public static boolean validate(String token, UserService srv) {
+    public static boolean validate(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token);
             String user = claims.getPayload().get("user", String.class);
@@ -119,6 +148,20 @@ public class JwtUtils {
                 return null;
             }
             return user;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public static User getJpaUser(String jwt) {
+        try {
+            Jws<Claims> claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(jwt);
+            String user = claims.getPayload().get("user", String.class);
+            if (user == null || user.isBlank()) {
+                return null;
+            }
+            List<User> userList = srv.findByName(user);
+            return userList.isEmpty() ? null : userList.getFirst();
         } catch (Exception ex) {
             return null;
         }
