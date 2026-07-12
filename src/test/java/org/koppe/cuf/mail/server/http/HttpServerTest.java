@@ -56,14 +56,14 @@ public class HttpServerTest {
                 return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
                         ResponseBody.of("{\"body\": \"Testbody\"}", null, getOutputType(),
                                 MediaType.APPLICATION_JSON),
-                        getOutputType());
+                        getOutputType(), new HashMap<>());
             }
             Mail mail = new Mail();
             mail.setFrom("test@test.com");
             mail.setBody("Testbody");
             mail.setSubject("Test");
-            return org.koppe.cuf.mail.server.http.entities.Response.of(200, null,
-                    ResponseBody.of(mail, getOutputType(), MediaType.APPLICATION_JSON), getOutputType());
+            return org.koppe.cuf.mail.server.http.entities.Response.ok(mail, getOutputType(),
+                    MediaType.APPLICATION_JSON);
         }
 
         @Override
@@ -74,7 +74,6 @@ public class HttpServerTest {
 
     @BeforeAll
     public static void setup() {
-
         HttpInitializer.announce(ep);
         try {
             HttpInitializer.initializeEndpoints();

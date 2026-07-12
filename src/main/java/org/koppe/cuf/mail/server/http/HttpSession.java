@@ -9,13 +9,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.koppe.cuf.mail.server.common.Authenticator;
 import org.koppe.cuf.mail.server.common.Server;
 import org.koppe.cuf.mail.server.common.Session;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.mail.WritingUtils;
+import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.http.entities.Endpoint;
 import org.koppe.cuf.mail.server.http.entities.HttpCode;
+import org.koppe.cuf.mail.server.http.entities.JwtAuthenticator;
 import org.koppe.cuf.mail.server.http.entities.Request;
 import org.koppe.cuf.mail.server.http.entities.RequestBody;
 import org.koppe.cuf.mail.server.http.entities.Response;
@@ -28,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.ToString.Include;
 
@@ -75,6 +79,11 @@ public class HttpSession<I, O> implements Session {
      * List of all subscribed servers
      */
     private List<Server> subscribers = new ArrayList<>();
+    /**
+     * Authenticator
+     */
+    @Setter
+    private Authenticator auth = new JwtAuthenticator();
 
     /**
      * {@inheritDoc}
@@ -88,20 +97,29 @@ public class HttpSession<I, O> implements Session {
         try {
             buildRequest(request);
         } catch (IOException e) {
-            logger.error("Exception occurred while building the request", e);
+            logger.info("Exception occurred while building the request", e);
             close();
             subscribers.forEach(s -> s.notify(new StatusChangeEvent(this, StatusChange.DONE)));
             return;
         }
 
-        logger.debug("Givign built request to endpoint to handle");
-        Response<O> response = endpoint.handle(request);
-        logger.debug("Endpoint handled request, initializing response handling");
+        @SuppressWarnings("unused")
+        User user = null;
+        Response<O> response = null;
+
+        if (endpoint.isAuthenticated() && (user = auth.authenticate(request)) == null) {
+            logger.debug("Session is not authorized, closing ");
+            response = Response.unauthorized();
+        } else {
+            logger.debug("Givign built request to endpoint to handle");
+            response = endpoint.handle(request);
+            logger.debug("Endpoint handled request, initializing response handling");
+        }
 
         try {
             handleResponse(response);
         } catch (IOException e) {
-            logger.error("Could not respond to client due to exception", e);
+            logger.info("Could not respond to client due to exception", e);
             try {
                 errorHandling();
             } catch (IOException e1) {
@@ -127,7 +145,7 @@ public class HttpSession<I, O> implements Session {
         String line;
         logger.debug("Starting to read client input");
         while ((line = reader.readLine()) != null) {
-            logger.trace("Read new line: {}", line);
+            logger.trace("Read new line");
             if (line.isBlank()) {
                 logger.debug("End of headers");
                 break;

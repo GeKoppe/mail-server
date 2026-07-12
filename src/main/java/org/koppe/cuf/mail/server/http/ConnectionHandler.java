@@ -71,7 +71,7 @@ public class ConnectionHandler {
         logger.debug("Starting session build up for incoming connection");
         if (server.isUseTls()) {
             logger.debug("Server uses tls, wrapping socket");
-            if ((socket = TLSWrapper.wrapTls(socket)) == null) {
+            if ((socket = TLSWrapper.wrapTls(socket, true)) == null) {
                 logger.error("Could not wrap socket in tls");
                 errorHandling();
                 return;

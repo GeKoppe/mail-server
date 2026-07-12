@@ -1,0 +1,12 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 6600:6600
+      - 6603:6603
+      - 6500:6500
+      - 6503:6503
+      - 6400:6400
+      - 6403:6403

@@ -1,5 +1,6 @@
 package org.koppe.cuf.mail.server.http.endpoints;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.koppe.cuf.mail.server.common.mail.Mail;
@@ -49,7 +50,8 @@ public class GetMailEndpoint implements Endpoint<Void, Mail> {
     public Response<Mail> handle(Request<Void> i) {
         if (i.getQuery().containsKey("only_body") && i.getQuery().get("only_body").equals("true")) {
             return Response.of(200, "OK",
-                    ResponseBody.of("{\"body\":\"Test\"}", null, outputType, MediaType.APPLICATION_JSON), outputType);
+                    ResponseBody.of("{\"body\":\"Test\"}", null, outputType, MediaType.APPLICATION_JSON), outputType,
+                    new HashMap<>());
         }
         Mail mail = new Mail();
         mail.setBody("Test");
@@ -58,7 +60,7 @@ public class GetMailEndpoint implements Endpoint<Void, Mail> {
         mail.getCc().add("cc@test.com");
         mail.getHeader().put("Test", "Test");
         return Response.of(200, "OK",
-                ResponseBody.of(mail, outputType, MediaType.APPLICATION_JSON), outputType);
+                ResponseBody.of(mail, outputType, MediaType.APPLICATION_JSON), outputType, new HashMap<>());
     }
 
 }

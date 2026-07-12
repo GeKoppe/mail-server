@@ -108,6 +108,10 @@ public class JpaRepository<T, K> {
         return findBy(property.getName(), value, "=");
     }
 
+    public <V> boolean existsBy(SingularAttribute<T, V> property, @NotNull String value) {
+        return !findBy(property, value).isEmpty();
+    }
+
     // #region find like
     /**
      * Generic find by method. Returns all entities with property matching the given

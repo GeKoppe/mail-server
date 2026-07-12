@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: Pipeline
     
     steps:
     - name: Checkout code
@@ -26,12 +27,21 @@ jobs:
     
     - name: Run tests
       run: ./gradlew test
+      env:
+        GH_USER: ${{ secrets.GH_USER }}
+        GH_KEY: ${{ secrets.GH_KEY }}
     
     - name: Generate JaCoCo Report
       run: ./gradlew jacocoTestReport
+      env:
+        GH_USER: ${{ secrets.GH_USER }}
+        GH_KEY: ${{ secrets.GH_KEY }}
     
     - name: Check code coverage
       run: ./gradlew jacocoTestCoverageVerification
+      env:
+        GH_USER: ${{ secrets.GH_USER }}
+        GH_KEY: ${{ secrets.GH_KEY }}
     
     - name: Upload JaCoCo coverage report as artifact
       uses: actions/upload-artifact@v4

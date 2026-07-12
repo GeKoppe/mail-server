@@ -4,16 +4,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.ALLOW_PLAIN;
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.DOMAINS;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.HTTPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.HTTP_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAP_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PASS;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PATH;
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.MAX_MAIL_SIZE;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTP_PORT;
 
+import java.util.Set;
+
 import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
+import org.koppe.cuf.mail.server.config.MailConfig;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
 import org.koppe.cuf.mail.server.config.SecurityConfig;
 
@@ -26,15 +31,18 @@ public class ConfigInitializer {
      */
     private static final Logger logger = LoggerFactory.getLogger(ConfigInitializer.class);
 
+    // #region execute
     /**
      * Initializes all configurations
      * 
-     * @throws ConfigurationException
+     * @throws ConfigurationException If the given configuration parameters are
+     *                                invalid
      */
     public static final void execute() throws ConfigurationException {
         logger.info("Initializing all server configs");
         initNetworkConfig();
         initSecurityConfig();
+        initMailConfig();
     }
 
     /**
@@ -73,6 +81,7 @@ public class ConfigInitializer {
         }
     }
 
+    // #region init security config
     /**
      * Initializes the security configuration for the server
      * 
@@ -102,6 +111,31 @@ public class ConfigInitializer {
             throw new ConfigurationException(
                     "Plain communication not allowed but keystore path and keystore pass are not defined in environment",
                     ex);
+        }
+    }
+
+    // #region init mail config
+    /**
+     * Initializes mail configuration
+     * 
+     * @throws ConfigurationException If no domains for this system are configured
+     *                                or an invalid MAX_MAIL_SIZE is given
+     */
+    private static final void initMailConfig() throws ConfigurationException {
+        logger.info("Initialising mail config");
+        try {
+            MailConfig.MAX_MAIL_SIZE = System.getenv(MAX_MAIL_SIZE) != null
+                    ? Long.parseLong(System.getenv(MAX_MAIL_SIZE))
+                    : 32768L;
+
+            if (System.getenv(DOMAINS) == null) {
+                logger.error("No domains configured for this server");
+                throw new ConfigurationException("Missing domain configuration");
+            }
+            MailConfig.DOMAINS = Set.of(System.getenv(DOMAINS).split(","));
+        } catch (Exception ex) {
+            logger.error("Exception occurred while trying to initialize mail config", ex);
+            throw new ConfigurationException(ex.getMessage(), ex);
         }
     }
 }

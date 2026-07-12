@@ -14,6 +14,7 @@ import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
 import org.koppe.cuf.mail.server.common.exceptions.StartupException;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
 import org.koppe.cuf.mail.server.config.SecurityConfig;
+import org.koppe.cuf.mail.server.db.HibernateFactory;
 import org.koppe.cuf.mail.server.http.HttpServer;
 import org.koppe.cuf.mail.server.smtp.SmtpServer;
 import org.slf4j.Logger;
@@ -90,13 +91,13 @@ public class Main {
 			throw ex;
 		}
 
-		// try {
-		// HibernateFactory.buildSessionFactory();
-		// } catch (StartupException ex) {
-		// logger.error("Could not create connection to database, cancelling startup",
-		// ex);
-		// return;
-		// }
+		try {
+			HibernateFactory.buildSessionFactory();
+		} catch (StartupException ex) {
+			logger.error("Could not create connection to database, cancelling startup",
+					ex);
+			return;
+		}
 	}
 
 	private static void initHttp() throws StartupException {

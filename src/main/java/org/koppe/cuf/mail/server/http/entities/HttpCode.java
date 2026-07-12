@@ -10,6 +10,7 @@ public enum HttpCode {
     OK(200, "OK"),
     NO_CONTENT(204, "No Content"),
     BAD_REQUEST(400, "Bad Request"),
+    UNAUTHORIZED(401, "Unauthorized"),
     FORBIDDEN(403, "Forbidden"),
     SERVER_ERROR(500, "Internal Server Error");
 

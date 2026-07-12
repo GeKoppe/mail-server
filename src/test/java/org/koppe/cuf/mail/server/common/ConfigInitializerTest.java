@@ -2,11 +2,13 @@ package org.koppe.cuf.mail.server.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.koppe.cuf.mail.server.common.exceptions.ConfigurationException;
+import org.koppe.cuf.mail.server.config.MailConfig;
 import org.koppe.cuf.mail.server.config.NetworkConfig;
 
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -19,7 +21,8 @@ public class ConfigInitializerTest {
     @SystemStub
     private EnvironmentVariables env = new EnvironmentVariables()
             .set("SMTP_PORT", "1337")
-            .set("SMTPS_PORT", "6666");
+            .set("SMTPS_PORT", "6666")
+            .set("DOMAINS", "test.com,test2.com");
 
     @Test
     void testExecute() {
@@ -31,6 +34,7 @@ public class ConfigInitializerTest {
         assertEquals(1337, NetworkConfig.SMTP_PORT);
         assertEquals(6666, NetworkConfig.SMTPS_PORT);
         assertEquals(6600, NetworkConfig.HTTP_PORT);
+        assertTrue(MailConfig.DOMAINS.contains("test.com") && MailConfig.DOMAINS.contains("test2.com"));
 
         env.set("HTTP_PORT", "HELLO WORLD");
         assertThrows(ConfigurationException.class, () -> ConfigInitializer.execute());

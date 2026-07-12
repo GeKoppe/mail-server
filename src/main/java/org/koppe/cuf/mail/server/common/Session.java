@@ -1,5 +1,8 @@
 package org.koppe.cuf.mail.server.common;
 
+/**
+ * Interface extended by all sessions
+ */
 public interface Session extends Runnable {
     /**
      * Signalises whether this session is still active

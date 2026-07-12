@@ -47,6 +47,6 @@ public class PingEndpoint implements Endpoint<Void, Void> {
     @Override
     public Response<Void> handle(Request<Void> i) {
         return Response.of(200, "Ok", ResponseBody.of(null, null, outputType, MediaType.APPLICATION_JSON),
-                outputType);
+                outputType, new HashMap<>());
     }
 }

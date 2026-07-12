@@ -7,6 +7,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Interface for http requests.
+ * Contains all parts of the http message.
+ */
 public interface Request<T> extends HttpMessage {
     /**
      * {@inheritDoc}

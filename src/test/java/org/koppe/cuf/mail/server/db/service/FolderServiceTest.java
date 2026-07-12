@@ -16,12 +16,12 @@ import org.koppe.cuf.mail.server.db.jpa.Mail;
 import org.koppe.cuf.mail.server.db.jpa.MailMetadata;
 import org.koppe.cuf.mail.server.db.jpa.User;
 import org.koppe.cuf.mail.server.db.repository.JpaRepository;
+import org.koppe.cuf.mail.server.db.repository.UserRepository;
 
 public class FolderServiceTest {
-
     private static SessionFactory fact;
     private static JpaRepository<Folder, Long> repo = new JpaRepository<>(Folder.class);
-    private static JpaRepository<User, Integer> uRepo = new JpaRepository<>(User.class);
+    private static UserRepository uRepo = new UserRepository();
 
     @BeforeAll
     public static void beforeEach() {
@@ -59,7 +59,7 @@ public class FolderServiceTest {
         u.setName("test");
         u.setPw("test");
 
-        User saved = us.save(u);
+        User saved = us.create(u);
 
         Folder folder = new Folder();
         folder.setName("Test");
