@@ -11,4 +11,5 @@ public class MailConfig {
      * Domains this server belongs to
      */
     public static Set<String> DOMAINS;
+    public static String MAIL_STORE_DIRECTORY = "/opt/cuf/mails/store";
 }

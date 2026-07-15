@@ -1,16 +1,19 @@
 package org.koppe.cuf.mail.server.db.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.koppe.cuf.mail.server.db.jpa.Mail;
 import org.koppe.cuf.mail.server.db.jpa.Mail_;
-import org.koppe.cuf.mail.server.db.repository.JpaRepository;
+import org.koppe.cuf.mail.server.db.repository.MailRepository;
+import org.koppe.java.expansion.validation.ValidationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 public class MailService {
@@ -21,7 +24,8 @@ public class MailService {
     /**
      * Repository to interact with the database
      */
-    private final JpaRepository<Mail, Long> repo = new JpaRepository<>(Mail.class);
+    @Setter
+    private MailRepository repo = new MailRepository();
 
     // #region find by id
     /**
@@ -87,5 +91,19 @@ public class MailService {
      */
     public @NotNull Mail save(@NotNull Mail mail) throws Exception {
         return repo.save(mail);
+    }
+
+    public @NotNull Mail update(@NotNull Mail mail) throws Exception {
+        return repo.update(mail);
+    }
+
+    public @NotNull Optional<Mail> findByGuid(@NotNull String guid) {
+        if (!ValidationUtils.checkNotNullOrEmpty(guid))
+            return Optional.empty();
+
+        List<Mail> mails = repo.findBy(Mail_.guid, guid);
+        if (mails.isEmpty())
+            return Optional.empty();
+        return Optional.ofNullable(mails.get(0));
     }
 }

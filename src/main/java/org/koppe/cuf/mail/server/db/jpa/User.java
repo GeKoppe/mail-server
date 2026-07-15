@@ -22,7 +22,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+		@Index(columnList = "username"),
+		@Index(columnList = "user_mail")
+})
 @Getter
 @Setter
 @ToString(onlyExplicitlyIncluded = true)

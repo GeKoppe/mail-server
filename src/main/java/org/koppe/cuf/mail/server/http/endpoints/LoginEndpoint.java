@@ -16,12 +16,14 @@ import org.koppe.cuf.mail.server.http.entities.Path;
 import org.koppe.cuf.mail.server.http.entities.Request;
 import org.koppe.cuf.mail.server.http.entities.Response;
 import org.koppe.cuf.mail.server.http.utils.JwtUtils;
+import org.koppe.java.expansion.validation.ValidationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Endpoint for logging into the system
@@ -61,7 +63,8 @@ public class LoginEndpoint implements Endpoint<LoginDto, SessionDto> {
     /**
      * Repository for interacting with users in the database
      */
-    private final UserService repo = new UserService();
+    @Setter
+    private UserService repo = new UserService();
 
     /**
      * Handles the actual request
@@ -74,8 +77,7 @@ public class LoginEndpoint implements Endpoint<LoginDto, SessionDto> {
         }
 
         LoginDto body = i.getBody().getObject();
-        if (body.getUser() == null || body.getPassword() == null || body.getUser().isBlank()
-                || body.getPassword().isBlank()) {
+        if (!ValidationUtils.checkNotNullOrEmpty(body.getPassword(), body.getUser())) {
             logger.info("No credentials given");
             return Response.unauthorized();
         }

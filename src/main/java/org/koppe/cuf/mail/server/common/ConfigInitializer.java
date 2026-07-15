@@ -11,6 +11,7 @@ import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.IMAP_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PASS;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.KEYSTORE_PATH;
+import static org.koppe.cuf.mail.server.config.EnvironmentConfig.MAIL_STORE_DIRECTORY;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.MAX_MAIL_SIZE;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTPS_PORT;
 import static org.koppe.cuf.mail.server.config.EnvironmentConfig.SMTP_PORT;
@@ -132,6 +133,10 @@ public class ConfigInitializer {
                 logger.error("No domains configured for this server");
                 throw new ConfigurationException("Missing domain configuration");
             }
+
+            MailConfig.MAIL_STORE_DIRECTORY = System.getenv(MAIL_STORE_DIRECTORY) != null
+                    ? System.getenv(MAIL_STORE_DIRECTORY)
+                    : MailConfig.MAIL_STORE_DIRECTORY;
             MailConfig.DOMAINS = Set.of(System.getenv(DOMAINS).split(","));
         } catch (Exception ex) {
             logger.error("Exception occurred while trying to initialize mail config", ex);

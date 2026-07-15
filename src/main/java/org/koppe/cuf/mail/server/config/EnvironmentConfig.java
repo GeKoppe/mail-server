@@ -36,9 +36,22 @@ public class EnvironmentConfig {
      * Keystore password
      */
     public static final String KEYSTORE_PASS = "KEYSTORE_PASS";
+    /**
+     * Allow plain communication
+     */
     public static final String ALLOW_PLAIN = "ALLOW_PLAIN";
 
     // #region mail
+    /**
+     * Masimum size of the e-mails this system can process
+     */
     public static final String MAX_MAIL_SIZE = "MAX_MAIL_SIZE";
+    /**
+     * Mail domains of this server
+     */
     public static final String DOMAINS = "DOMAINS";
+    /**
+     * Directory to store the mails in
+     */
+    public static final String MAIL_STORE_DIRECTORY = "MAIL_STORE_DIRECTORY";
 }
