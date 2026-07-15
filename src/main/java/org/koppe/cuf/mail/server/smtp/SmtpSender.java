@@ -156,6 +156,7 @@ public class SmtpSender {
      * @param domain Domain to execute dns lookup for.
      * @return The matching mx record.
      */
+    @SuppressWarnings("null")
     private MXRecord lookup(String domain) {
         logger.debug("Looking up mx record for domain {}", domain);
         Hashtable<String, String> env = new Hashtable<>();

@@ -16,6 +16,7 @@ import org.koppe.cuf.mail.server.common.events.StatusChangeEvent;
 import org.koppe.cuf.mail.server.common.events.StatusChangeEvent.StatusChange;
 import org.koppe.cuf.mail.server.common.mail.Command;
 import org.koppe.cuf.mail.server.common.mail.Mail;
+import org.koppe.cuf.mail.server.common.mail.MailStore;
 import org.koppe.cuf.mail.server.config.MailConfig;
 import org.koppe.cuf.mail.server.smtp.state.SmtpContext;
 import org.koppe.cuf.mail.server.smtp.state.SmtpRequestHandler;
@@ -88,10 +89,25 @@ public class SmtpSession implements Session {
         return true;
     }
 
-    private void saveMail() {
-        logger.info("Mail: {}", context.getMail());
+    /**
+     * Saves mail to the system
+     * 
+     * @throws Exception
+     * @throws IOException
+     * @throws IllegalAccessError
+     */
+    private void saveMail() throws IllegalAccessError, IOException, Exception {
+        logger.info("Saving mail");
+        try (MailStore ms = new MailStore(context.getUser())) {
+            ms.save(getMail());
+        }
     }
 
+    /**
+     * Returns mail this session is working on
+     * 
+     * @return The mail this session is working on
+     */
     public Mail getMail() {
         return context.getMail();
     }
@@ -130,7 +146,12 @@ public class SmtpSession implements Session {
             new SmtpSender(true).send(context.getMail());
         } else {
             logger.debug("Saving message");
-            saveMail();
+            try {
+                saveMail();
+            } catch (IllegalAccessError | Exception e) {
+                logger.info("Exception occurred while saving mail {}", getMail());
+                return;
+            }
         }
     }
 

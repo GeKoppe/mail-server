@@ -83,6 +83,7 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+	finalizedBy jacocoTestCoverageVerification
 }
 
 jacoco {

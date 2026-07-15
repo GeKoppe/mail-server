@@ -15,7 +15,7 @@ public class Mail {
     /**
      * Mail headers
      */
-    private final Map<String, String> header = new HashMap<>();
+    private Map<String, String> header = new HashMap<>();
     /**
      * Sender of the mail
      */
@@ -23,15 +23,15 @@ public class Mail {
     /**
      * Recipients of the mail
      */
-    private final List<String> to = new ArrayList<>();
+    private List<String> to = new ArrayList<>();
     /**
      * Carbon copy recipients of the mail
      */
-    private final List<String> cc = new ArrayList<>();
+    private List<String> cc = new ArrayList<>();
     /**
      * Blind carbon copy recipients of the mail
      */
-    private final List<String> bcc = new ArrayList<>();
+    private List<String> bcc = new ArrayList<>();
     /**
      * Subject of the mail
      */
@@ -40,4 +40,19 @@ public class Mail {
      * Body of the mail
      */
     private String body;
+
+    public String toFileString() {
+        StringBuilder sb = new StringBuilder();
+
+        header.entrySet().forEach(x -> {
+            sb.append(x.getKey())
+                    .append(": ")
+                    .append(x.getValue())
+                    .append("\r\n");
+        });
+        sb.append("\r\n")
+                .append(body);
+
+        return sb.toString();
+    }
 }

@@ -2,6 +2,7 @@ package org.koppe.cuf.mail.server.db.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -12,6 +13,7 @@ import org.koppe.cuf.mail.server.db.HibernateFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.metamodel.SingularAttribute;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -91,6 +93,16 @@ public class JpaRepository<T, K> {
     public @NotNull T save(@NotNull T t) throws Exception {
         executeInTx((s) -> {
             s.persist(t);
+        });
+        return t;
+    }
+
+    public @Nullable T update(@NotNull T t, @NotNull K id, @NotNull BiConsumer<T, T> updater) throws Exception {
+        executeInTx(s -> {
+            T current = s.get(type, id);
+            updater.accept(current, t);
+            T updated = s.merge(current);
+            updater.accept(t, updated);
         });
         return t;
     }
